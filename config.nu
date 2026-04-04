@@ -6,8 +6,8 @@
 
 # ——— constants ———————————————————————————————————————————————————————————————
 const NU_LIB_DIRS = [
-    "/home/ramda/.local/share/nupm/modules"
-    "/home/ramda/code/nu"
+    "~/.local/share/nupm/modules"
+    "~/code/nu"
 ]
 
 const NU_PLUGIN_DIRS = [
@@ -21,16 +21,16 @@ use std/util "path add"
 overlay use ($NU_LIB_DIRS | get 0 | path basename --replace nupm) --prefix
 
 # ——— environment —————————————————————————————————————————————————————————————
-$env.PNPM_HOME = "/home/ramda/.local/share/pnpm"
+$env.PNPM_HOME = "~/.local/share/pnpm"
 path add $env.PNPM_HOME
 
 $env.NUPM_HOME = ($NU_LIB_DIRS | get 0)
 path add ($env.NUPM_HOME | path join "scripts")
 
 path add /home/linuxbrew/.linuxbrew/bin/
-path add /home/ramda/.local/bin
-path add /home/ramda/.pixi/bin
-path add /home/ramda/.bun/bin
+path add ~/.local/bin
+path add ~/.pixi/bin
+path add ~/.bun/bin
 
 $env.path = ($env.path | split row (char esep) | uniq)
 
@@ -51,7 +51,8 @@ $env.config.keybindings ++= [
 ]
 
 # ——— activation ——————————————————————————————————————————————————————————————
-source "~/.cargo/env.nu"
+
 
 # ——— prompt ——————————————————————————————————————————————————————————————————
-oh-my-posh init nu --config ~/.config/omp/custom.omp.json
+const omp_prompt = '~/code/nu/custom.omp.json'
+if ($omp_prompt | path exists) { oh-my-posh init nu --config $omp_prompt }

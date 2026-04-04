@@ -131,19 +131,17 @@
             "alignment": "right",
             "segments": [
                 {
-                    "foreground": "p:subtext1",
-                    "template": "{{ .CurrentDate | date .Format }} ",
-                    "options": {
-                        "time_format": "15:04:05"
-                    },
-                    "style": "plain",
-                    "type": "time"
-                },
-                {
                     "style": "plain",
                     "type": "executiontime",
                     "foreground": "p:warning",
-                    "template": "{{ .Ms }}"
+                    "template": "{{ .Ms }}ms "
+                },
+                {
+                    "style": "plain",
+                    "type": "time",
+                    "foreground": "p:subtext1",
+                    "template": "{{ .CurrentDate | date .Format }}",
+                    "options": { "time_format": "RFC822" }
                 }
             ]
         },

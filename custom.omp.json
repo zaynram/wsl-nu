@@ -60,7 +60,7 @@
           "type": "git",
           "style": "plain",
           "foreground": "p:text",
-          "template": "{{ $trait := .Var.Rust.Trait }}{{ if .Working.Changed }}{{ $trait.Open }}{{ .Ref }}{{ $trait.Inner }}</><p:red>*</><p:peach>{{ .Working.String }}</>{{ if gt .Behind 0 }}<p:mauve>↓</>{{ end }}{{ if gt .Ahead 0 }}<p:mauve>↑</>{{ end }}{{ else }}{{ $trait.Open }}origin{{ $trait.Inner }}<p:link>{{ .Remotes.origin }}</>{{ end }}{{ $trait.Close }}",
+          "template": "{{ $trait := .Var.Rust.Trait }}{{ if .Working.Changed }}{{ $trait.Open }}{{ .Ref }}{{ $trait.Inner }}</><p:red>*</><p:peach>{{ .Working.String }}</>{{ if gt .Behind 0 }}<p:mauve>↓</>{{ end }}{{ if gt .Ahead 0 }}<p:mauve>↑</>{{ end }}{{ else }}{{ $trait.Open }}origin{{ $trait.Inner }}<p:link>{{ trimSuffix \".git\" (trimPrefix \"https://github.com/\" .Remotes.origin) }}</>{{ end }}{{ $trait.Close }}",
           "options": {
             "fetch_status": true,
             "fetch_upstream_icon": true,

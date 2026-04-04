@@ -1,10 +1,11 @@
-export def init-plugin [--owner(-o): string]: string -> string {
-    let name = $in
-    if $'($owner)' != '' {
-        cargo install --git $'https://github.com/($owner)/($name).git'
-    } else {
-        cargo install $name
+export def "plugin install" [name: string, --owner(-o): string]: nothing -> nothing {
+    match $owner {
+        null => { cargo install $name }
+        _ => {
+            let url = ["https://github.com" $owner $name] | str join '/'
+            cargo install --git ($url + .git)
+        }
     }
-    plugin add ("~/.cargo/bin" | path join $name)
-    return $'(ansi green)added(ansi reset) ($name)'
+    plugin add $name
+    print $"installed ($name)"
 }

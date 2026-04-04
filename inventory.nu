@@ -1,5 +1,5 @@
-# lsp-inventory.nu
-# Run from anywhere: nu lsp-inventory.nu
+# inventory.nu
+# Run from anywhere: nu inventory.nu
 
 def main [] {
     # --- candidate binary names and their helix role ---

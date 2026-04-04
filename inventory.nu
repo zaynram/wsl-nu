@@ -57,14 +57,14 @@ def main [] {
             | first 1
         )
 
-        let resolved = if ($found | length) > 0 { $found | first } else { null }
+        let resolved = if ($found | length) > 0 { $found | first } else { (which $c.name).0?.path }
 
         {
             binary:   $c.name
             role:     $c.role
             language: $c.language
             found:    ($resolved != null)
-            path:     ($resolved | default (which $c.name).0?.path | default "not found")
+            path:     ($resolved | default "not found")
         }
     }
     | sort-by language

@@ -4,12 +4,14 @@
 # docs = { cli: "config nu --doc | nu-highlight | less -R",
 #          web: "https://www.nushell.sh/book/configuration.html" }
 
-# ——— constants ———————————————————————————————————————————————————————————————
-const NU_LIB_DIRS = [
-    "~/.local/share/nupm/modules"
-    "~/code/nu"
-]
+let home = ($env.HOME?
+    | default ($env.USERPROFILE?
+        | default ("~"
+            | path expand
+)))
 
+# ——— constants ———————————————————————————————————————————————————————————————
+const here = path self .
 const NU_PLUGIN_DIRS = [
     ($nu.current-exe | path dirname)
     ($nu.data-dir | path join "plugins" | path join (version).version)
@@ -18,19 +20,25 @@ const NU_PLUGIN_DIRS = [
 
 # ——— imports——————————————————————————————————————————————————————————————————
 use std/util "path add"
-overlay use ($NU_LIB_DIRS | get 0 | path basename --replace nupm) --prefix
 
 # ——— environment —————————————————————————————————————————————————————————————
-$env.PNPM_HOME = "~/.local/share/pnpm"
-path add $env.PNPM_HOME
-
-$env.NUPM_HOME = ($NU_LIB_DIRS | get 0)
-path add ($env.NUPM_HOME | path join "scripts")
-
-path add /home/linuxbrew/.linuxbrew/bin/
-path add ~/.local/bin
-path add ~/.pixi/bin
-path add ~/.bun/bin
+$env.VISUAL = (which code-insiders | get path).0?
+$env.EDITOR = (which hx | get path).0?
+$env.NUPM_HOME = $home | path join .local share nupm
+$env.PNPM_HOME = $home | path join .local share pnpm
+$env.NU_LIB_DIRS ++= [
+    ($env.NUPM_HOME | path join modules)
+    ($home | path join code nu)
+]
+[
+    $env.PNPM_HOME
+    ($env.NUPM_HOME | path join scripts)
+    /home/linuxbrew/.linuxbrew/bin
+    ($home | path join .local)
+    ...([.pixi .bun .cargo]
+        | par-each {|d| $home | path join $d bin }
+        | where ($it | path exists))
+] | par-each {|p| path add $p }
 
 $env.path = ($env.path | split row (char esep) | uniq)
 
@@ -54,5 +62,3 @@ $env.config.keybindings ++= [
 
 
 # ——— prompt ——————————————————————————————————————————————————————————————————
-const omp_prompt = '~/code/nu/custom.omp.json'
-if ($omp_prompt | path exists) { oh-my-posh init nu --config $omp_prompt }

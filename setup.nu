@@ -1,4 +1,5 @@
 const here = path self .
+const home = '~' | path expand
 [
     {
         src: ($here | path join config.nu)
@@ -6,13 +7,24 @@ const here = path self .
     },
     {
         src: ($here | path join helix languages.toml)
-        dst: ("~/.config/helix/languages.toml" | path expand)
+        dst: ($home | path join .config helix languages.toml)
     }
     {
         src: ($here | path join helix config.toml)
-        dst: ("~/.config/helix/config.toml" | path expand)
+        dst: ($home | path join .config helix config.toml)
     }
 ] | par-each { |map|
     cp ...($map | values)
     $map | table -c
 }
+
+oh-my-posh init nu --config (
+    $here
+    | path join custom.omp.json
+) --print
+| save (
+    $home
+    | path join .local share nushell vendor auto
+) --force
+
+print $"(ansi green)setup complete(ansi reset)"

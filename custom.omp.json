@@ -100,7 +100,8 @@
           "foreground": "p:red",
           "template": "{{ $sep := .Var.Rust.Separator }}{{ .Icon }}{{ $sep }}",
           "options": {
-            "display_distro_name": true
+            "display_distro_name": true,
+            "android": "termux"
           }
         },
         {
@@ -152,7 +153,7 @@
           "type": "session",
           "style": "plain",
           "foreground": "p:pink",
-          "template": "{{ if .Root }}[admin] {{ end }}{{ .UserName }} "
+          "template": "{{ if .Root }}^{{ end }}{{ .UserName }} "
         },
         {
           "foreground": "p:success",
@@ -164,7 +165,7 @@
             "always_enabled": true
           },
           "style": "plain",
-          "template": "\u276f ",
+          "template": "\u276f",
           "type": "status"
         }
       ],
@@ -179,7 +180,7 @@
   },
   "enable_cursor_positioning": true,
   "shell_integration": true,
-  "console_title_template": "{{if .Root}}[admin]{{end}} {{.PWD}}",
+  "console_title_template": "{{if .Root}}[admin] {{end}}{{.PWD}}",
   "final_space": true,
   "transient_prompt": {
     "foreground": "p:success",

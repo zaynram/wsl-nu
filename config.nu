@@ -40,7 +40,7 @@ $env.NU_LIB_DIRS ++= [
 $env.path = ($env.path | split row (char esep) | uniq)
 
 # ——— configuration ———————————————————————————————————————————————————————————
-$env.config.buffer_editor = "hx"
+$env.config.buffer_editor = $env.EDITOR
 $env.config.show_banner = false
 $env.config.keybindings ++= [
     {

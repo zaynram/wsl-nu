@@ -15,7 +15,7 @@ const home = '~' | path expand
     }
 ] | par-each { |map|
     cp ...($map | values)
-    $map | table -c
+    print ($map | table -c)
 }
 
 oh-my-posh init nu --config (
@@ -24,7 +24,10 @@ oh-my-posh init nu --config (
 ) --print
 | save (
     $home
-    | path join .local share nushell vendor auto
+    | path join (
+        $nu.config-path
+        | path dirname
+    ) vendor autoload custom.omp.json
 ) --force
 
-print $"(ansi green)setup complete(ansi reset)"
+print (ansi green)done(ansi reset)

@@ -1,0 +1,34 @@
+[[language]]
+auto-format      = true
+comment-token    = "#"
+file-types       = ["nu", "nuon"]
+formatter        = { command = "nufmt", args = ["--stdin"] }
+indent           = { tab-width = 2, unit = "  " }
+injection-regex  = "nu"
+language-servers = ["nu-lsp", "nu-lint"]
+name             = "nu"
+scope            = "source.nu"
+shebangs         = ["nu"]
+
+[[language]]
+comment-token = "#"
+file-types = [
+    "toml",
+    { glob = "pixi.lock" },
+    { glob = "Cargo.lock" },
+    { glob = "uv.lock" },
+]
+indent = { tab-width = 2, unit = "  " }
+injection-regex = "toml"
+language-servers = ["tombi"]
+name = "toml"
+scope = "source.toml"
+
+[[language]]
+auto-format      = true
+file-types       = ["json", "jsonl", "code-workspace"]
+indent           = { tab-width = 2, unit = "  " }
+injection-regex  = "json"
+language-servers = ["vscode-json-language-server"]
+name             = "json"
+scope            = "source.json"

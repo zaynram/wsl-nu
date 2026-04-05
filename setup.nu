@@ -1,33 +1,36 @@
-const here = path self .
-const home = '~' | path expand
-[
-    {
-        src: ($here | path join config.nu)
-        dst: $nu.config-path
-    },
-    {
-        src: ($here | path join helix languages.toml)
-        dst: ($home | path join .config helix languages.toml)
+const HERE = path self .
+const HOME = '~' | path expand
+
+def batch-copy []: [
+    list<record<src: path dst: path>> -> nothing
+] { par-each {|r|
+        try {
+            mkdir ($r.dst | path dirname)
+            cp $r.src $r.dst --update --progress
+        } catch {
+            error make {
+                msg: "failed to copy file"
+                labels: [
+                    {text: `source` span: (metadata $r.src).span}
+                    {text: `output` span: (metadata $r.dst).span}
+                ]
+            }
+        }
     }
-    {
-        src: ($here | path join helix config.toml)
-        dst: ($home | path join .config helix config.toml)
-    }
-] | par-each { |map|
-    cp ...($map | values)
-    print ($map | table -c)
 }
 
-oh-my-posh init nu --config (
-    $here
-    | path join custom.omp.json
-) --print
-| save (
-    $home
-    | path join (
-        $nu.config-path
-        | path dirname
-    ) vendor autoload custom.omp.json
-) --force
-
-print (ansi green)done(ansi reset)
+def main []: [
+    nothing -> nothing
+] {
+    let from = $HERE | path join helix
+    let to = $HOME | path join .config helix
+    try {
+        ls --short-names ($HERE | path join helix *.toml)
+        | par-each { {src: ($from | path join $in) dst: ($to | path join $in)} }
+        | append {src: ($HERE | path join config.nu), dst: $nu.config-path}
+        | batch-copy
+    }
+    let custom = $HERE | path join custom.omp.json
+    let script = $nu.config-path | path basename --replace vendor/autoload/oh-my-posh.nu
+    try { oh-my-posh init nu --config $custom --print | save $script }
+}

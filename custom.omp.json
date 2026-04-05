@@ -1,193 +1,196 @@
 {
-  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/refs/heads/main/themes/schema.json",
-  "palette": {
-    "os": "#acb0be",
-    "text": "#c6d0f5",
-    "subtext1": "#b5bfe2",
-    "subtext0": "#a5adce",
-    "overlay2": "#949cbb",
-    "overlay1": "#838ba7",
-    "overlay0": "#737994",
-    "surface2": "#626880",
-    "surface1": "#51576d",
-    "surface0": "#414559",
-    "base": "#303446",
-    "mantle": "#292c3c",
-    "crust": "#232634",
-    "rosewater": "#f2d5cf",
-    "flamingo": "#eebebe",
-    "pink": "#f4b8e4",
-    "mauve": "#ca9ee6",
-    "red": "#e78284",
-    "maroon": "#ea999c",
-    "peach": "#ef9f76",
-    "yellow": "#e5c890",
-    "green": "#a6d189",
-    "teal": "#81c8be",
-    "sky": "#99d1db",
-    "sapphire": "#85c1dc",
-    "lavender": "#babbf1",
-    "blue": "#8caaee",
-    "link": "p:blue",
-    "success": "p:green",
-    "warning": "p:yellow",
-    "error": "p:red"
-  },
-  "var": {
-    "Text": {
-      "Comma": "<p:text>, </>"
+    "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/refs/heads/main/themes/schema.json",
+    "palette": {
+        "os": "#acb0be",
+        "text": "#c6d0f5",
+        "subtext1": "#b5bfe2",
+        "subtext0": "#a5adce",
+        "overlay2": "#949cbb",
+        "overlay1": "#838ba7",
+        "overlay0": "#737994",
+        "surface2": "#626880",
+        "surface1": "#51576d",
+        "surface0": "#414559",
+        "base": "#303446",
+        "mantle": "#292c3c",
+        "crust": "#232634",
+        "rosewater": "#f2d5cf",
+        "flamingo": "#eebebe",
+        "pink": "#f4b8e4",
+        "mauve": "#ca9ee6",
+        "red": "#e78284",
+        "maroon": "#ea999c",
+        "peach": "#ef9f76",
+        "yellow": "#e5c890",
+        "green": "#a6d189",
+        "teal": "#81c8be",
+        "sky": "#99d1db",
+        "sapphire": "#85c1dc",
+        "lavender": "#babbf1",
+        "blue": "#8caaee",
+        "link": "p:blue",
+        "success": "p:green",
+        "warning": "p:yellow",
+        "error": "p:red"
     },
-    "Rust": {
-      "Separator": "<p:teal>::</>",
-      "Macro": {
-        "Open": "<p:blue>",
-        "Inner": "!(</>",
-        "Close": "<p:blue>)</>"
-      },
-      "Trait": {
-        "Open": "<p:surface1>#[</><d><p:subtext0>",
-        "Inner": "(</>",
-        "Close": "<p:subtext0>)</><p:surface1></d>]</>"
-      }
-    }
-  },
-  "blocks": [
-    {
-      "type": "prompt",
-      "alignment": "left",
-      "segments": [
-        {
-          "type": "git",
-          "style": "plain",
-          "foreground": "p:text",
-          "template": "{{ $trait := .Var.Rust.Trait }}{{ if .Working.Changed }}{{ $trait.Open }}{{ .Ref }}{{ $trait.Inner }}</><p:red>*</><p:peach>{{ .Working.String }}</>{{ if gt .Behind 0 }}<p:mauve>↓</>{{ end }}{{ if gt .Ahead 0 }}<p:mauve>↑</>{{ end }}{{ else }}{{ $trait.Open }}origin{{ $trait.Inner }}<p:link>{{ trimSuffix \".git\" (trimPrefix \"https://github.com/\" .Remotes.origin) }}</>{{ end }}{{ $trait.Close }}",
-          "options": {
-            "fetch_status": true,
-            "fetch_upstream_icon": true,
-            "branch_icon": "\uf418 ",
-            "branch_identical_icon": "\u2261"
-          },
-          "source": "cli"
+    "var": {
+        "Text": {
+            "Comma": "<p:text>, </>"
+        },
+        "Rust": {
+            "Separator": "<p:teal>::</>",
+            "Macro": {
+                "Open": "<p:blue>",
+                "Inner": "!(</>",
+                "Close": "<p:blue>)</>"
+            },
+            "Trait": {
+                "Open": "<p:surface1>#[</><d><p:subtext0>",
+                "Inner": "(</>",
+                "Close": "<p:subtext0>)</><p:surface1></d>]</>"
+            }
         }
-      ]
     },
-    {
-      "type": "prompt",
-      "alignment": "right",
-      "segments": [
+    "blocks": [
         {
-          "type": "git",
-          "style": "plain",
-          "foreground": "p:overlay0",
-          "template": "{{ if .BranchStatus }}<p:maroon>{{ .BranchStatus }}</> {{ end }}{{ if .Working.Changed }}{{ trimPrefix \"https://github.com/\" (trimSuffix \".git\" .Remotes.origin) }}{{ else }}{{ .Ref }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} <#p:green>\uf046</> {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} <p:mauve>\ueb4b</p:mauve> {{ .StashCount }}{{ end }}",
-          "options": {
-            "fetch_status": true,
-            "fetch_upstream_icon": true,
-            "branch_icon": "\uf418 ",
-            "branch_identical_icon": "\u2261"
-          },
-          "source": "cli"
-        }
-      ]
-    },
-    {
-      "alignment": "left",
-      "newline": true,
-      "segments": [
-        {
-          "type": "os",
-          "style": "plain",
-          "foreground": "p:red",
-          "template": "{{ $sep := .Var.Rust.Separator }}{{ .Icon }}{{ $sep }}",
-          "options": {
-            "display_distro_name": true,
-            "android": "termux"
-          }
+            "type": "prompt",
+            "alignment": "left",
+            "segments": [
+                {
+                    "type": "git",
+                    "style": "plain",
+                    "foreground": "p:text",
+                    "template": "{{ $trait := .Var.Rust.Trait }}{{ if .Working.Changed }}{{ $trait.Open }}{{ .Ref }}{{ $trait.Inner }}</><p:red>*</><p:peach>{{ .Working.String }}</>{{ if gt .Behind 0 }}<p:mauve>↓</>{{ end }}{{ if gt .Ahead 0 }}<p:mauve>↑</>{{ end }}{{ else }}{{ $trait.Open }}origin{{ $trait.Inner }}<p:link>{{ trimSuffix \".git\" (trimPrefix \"https://github.com/\" .Remotes.origin) }}</>{{ end }}{{ $trait.Close }}",
+                    "options": {
+                        "fetch_status": true,
+                        "fetch_upstream_icon": true,
+                        "branch_icon": "\uf418 ",
+                        "branch_identical_icon": "\u2261"
+                    },
+                    "source": "cli"
+                }
+            ]
         },
         {
-          "type": "shell",
-          "style": "plain",
-          "foreground": "p:flamingo",
-          "template": "{{ $sep := .Var.Rust.Separator }}{{ .Name }}{{ $sep }}"
+            "type": "prompt",
+            "alignment": "right",
+            "segments": [
+                {
+                    "type": "git",
+                    "style": "plain",
+                    "foreground": "p:overlay0",
+                    "template": "{{ if .BranchStatus }}<p:maroon>{{ .BranchStatus }}</> {{ end }}{{ if .Working.Changed }}{{ trimPrefix \"https://github.com/\" (trimSuffix \".git\" .Remotes.origin) }}{{ else }}{{ .Ref }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} <#p:green>\uf046</> {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} <p:mauve>\ueb4b</p:mauve> {{ .StashCount }}{{ end }}",
+                    "options": {
+                        "fetch_status": true,
+                        "fetch_upstream_icon": true,
+                        "branch_icon": "\uf418 ",
+                        "branch_identical_icon": "\u2261"
+                    },
+                    "source": "cli"
+                }
+            ]
         },
         {
-          "type": "path",
-          "style": "plain",
-          "foreground": "p:text",
-          "template": "{{ $m := .Var.Rust.Macro }}{{ $m.Open }}dir{{ $m.Inner }}{{ lower .Path }}{{ $m.Close }}",
-          "options": {
-            "style": "agnoster_full",
-            "home_icon": "~",
-            "folder_separator_template": "/"
-          }
-        }
-      ],
-      "type": "prompt"
-    },
-    {
-      "type": "prompt",
-      "alignment": "right",
-      "segments": [
-        {
-          "style": "plain",
-          "type": "executiontime",
-          "foreground": "p:warning",
-          "template": "{{ .Ms }}ms "
+            "alignment": "left",
+            "newline": true,
+            "segments": [
+                {
+                    "type": "os",
+                    "style": "plain",
+                    "foreground": "p:red",
+                    "template": "{{ $sep := .Var.Rust.Separator }}{{ .Icon }}{{ $sep }}",
+                    "options": {
+                        "display_distro_name": true,
+                        "windows": "windows",
+                        "android": "android",
+                        "debian": "debian",
+                        "linux": "linux",
+                        "macos": "macos",
+                        "ubuntu": "ubuntu"
+                    }
+                },
+                {
+                    "type": "shell",
+                    "style": "plain",
+                    "foreground": "p:flamingo",
+                    "template": "{{ $sep := .Var.Rust.Separator }}{{ .Name }}{{ $sep }}"
+                },
+                {
+                    "type": "path",
+                    "style": "plain",
+                    "foreground": "p:text",
+                    "template": "{{ $m := .Var.Rust.Macro }}{{ $m.Open }}dir{{ $m.Inner }}{{ lower .Path }}{{ $m.Close }}",
+                    "options": {
+                        "style": "agnoster_full",
+                        "home_icon": "~",
+                        "folder_separator_template": "/"
+                    }
+                }
+            ],
+            "type": "prompt"
         },
         {
-          "style": "plain",
-          "type": "time",
-          "foreground": "p:subtext1",
-          "template": "{{ .CurrentDate | date .Format }}",
-          "options": {
-            "time_format": "RFC822"
-          }
-        }
-      ]
-    },
-    {
-      "newline": true,
-      "alignment": "left",
-      "segments": [
-        {
-          "type": "session",
-          "style": "plain",
-          "foreground": "p:pink",
-          "template": "{{ if .Root }}^{{ end }}{{ .UserName }} "
+            "type": "prompt",
+            "alignment": "right",
+            "segments": [
+                {
+                    "style": "plain",
+                    "type": "executiontime",
+                    "foreground": "p:warning",
+                    "template": "{{ .Ms }}ms "
+                },
+                {
+                    "style": "plain",
+                    "type": "time",
+                    "foreground": "p:subtext1",
+                    "template": "{{ .CurrentDate | date .Format }}",
+                    "options": {
+                        "time_format": "RFC822"
+                    }
+                }
+            ]
         },
         {
-          "foreground": "p:success",
-          "foreground_templates": [
-            "{{ if gt .Code 0 }}#e78284{{ end }}",
-            "{{ if eq .Code 0 }}#babbf1{{ end }}"
-          ],
-          "options": {
-            "always_enabled": true
-          },
-          "style": "plain",
-          "template": "\u276f",
-          "type": "status"
+            "newline": true,
+            "alignment": "left",
+            "segments": [
+                {
+                    "type": "session",
+                    "style": "plain",
+                    "foreground": "p:pink",
+                    "template": "{{ if .Root }}^{{ end }}{{ .UserName }} "
+                },
+                {
+                    "foreground": "p:success",
+                    "foreground_templates": [
+                        "{{ if gt .Code 0 }}#e78284{{ end }}",
+                        "{{ if eq .Code 0 }}#babbf1{{ end }}"
+                    ],
+                    "options": {
+                        "always_enabled": true
+                    },
+                    "style": "plain",
+                    "template": "\u276f",
+                    "type": "status"
+                }
+            ],
+            "type": "prompt"
         }
-      ],
-      "type": "prompt"
-    }
-  ],
-  "terminal_background": "p:base",
-  "upgrade": {
-    "source": "cdn",
-    "auto": true,
-    "notice": false
-  },
-  "enable_cursor_positioning": true,
-  "shell_integration": true,
-  "console_title_template": "{{if .Root}}[admin] {{end}}{{.PWD}}",
-  "final_space": true,
-  "transient_prompt": {
-    "foreground": "p:success",
-    "foreground_templates": [
-      "{{ if gt .Code 0 }}#e78284{{ end }}"
     ],
-    "template": "\u276f "
-  },
-  "version": 3
+    "terminal_background": "p:base",
+    "upgrade": {
+        "source": "cdn",
+        "auto": true,
+        "notice": false
+    },
+    "enable_cursor_positioning": true,
+    "shell_integration": true,
+    "console_title_template": "{{if .Root}}[admin] {{end}}{{.PWD}}",
+    "final_space": true,
+    "transient_prompt": {
+        "foreground": "p:success",
+        "foreground_templates": ["{{ if gt .Code 0 }}#e78284{{ end }}"],
+        "template": "\u276f "
+    },
+    "version": 3
 }

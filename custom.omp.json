@@ -34,9 +34,6 @@
         "error": "p:red"
     },
     "var": {
-        "Text": {
-            "Comma": "<p:text>, </>"
-        },
         "Rust": {
             "Separator": "<p:teal>::</>",
             "Macro": {
@@ -79,7 +76,7 @@
                     "type": "git",
                     "style": "plain",
                     "foreground": "p:overlay0",
-                    "template": "{{ if .BranchStatus }}<p:maroon>{{ .BranchStatus }}</> {{ end }}{{ if .Working.Changed }}{{ trimPrefix \"https://github.com/\" (trimSuffix \".git\" .Remotes.origin) }}{{ else }}{{ .Ref }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} <#p:green>\uf046</> {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} <p:mauve>\ueb4b</p:mauve> {{ .StashCount }}{{ end }}",
+                    "template": "{{ if .BranchStatus }}<p:maroon>{{ .BranchStatus }}</> {{ end }}{{ if .Working.Changed }}{{ trimPrefix \"https://github.com/\" (trimSuffix \".git\" .Remotes.origin) }}{{ else }}{{ .Ref }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} <#p:green>\uf046</> {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} <p:mauve>\ueb4b</> {{ .StashCount }}{{ end }}",
                     "options": {
                         "fetch_status": true,
                         "fetch_upstream_icon": true,
@@ -98,7 +95,7 @@
                     "type": "os",
                     "style": "plain",
                     "foreground": "p:red",
-                    "template": "{{ $sep := .Var.Rust.Separator }}{{ .Icon }}{{ $sep }}",
+                    "template": "{{ .Icon }}{{ .Var.Rust.Separator }}",
                     "options": {
                         "display_distro_name": true,
                         "windows": "windows",
@@ -113,7 +110,7 @@
                     "type": "shell",
                     "style": "plain",
                     "foreground": "p:flamingo",
-                    "template": "{{ $sep := .Var.Rust.Separator }}{{ .Name }}{{ $sep }}"
+                    "template": "{{ .Name }}{{ .Var.Rust.Separator }}"
                 },
                 {
                     "type": "path",

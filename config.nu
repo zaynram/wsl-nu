@@ -28,7 +28,7 @@ path add $env.PNPM_HOME
 
 $env.NU_LIB_DIRS ++= [
     ([$env.NUPM_HOME modules] | path join)
-    ([$nu.home-dir code nu] | path join)
+    ([$nu.home-dir code nu lib] | path join)
 ]
 
 [.pixi .bun .cargo]

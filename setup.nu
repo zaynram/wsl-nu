@@ -70,13 +70,8 @@ def configure-posh []: [
 }
 
 def main []: any -> table {
-    [
-        {src: (resolve config.nu)           dst: $nu.config-path}
-        {src: (resolve helix * | into glob) dst: ($nu.default-config-dir | path basename -r helix)}
-        {src: (resolve lib * | into glob)   dst: ($nu.user-autoload-dirs | reverse | get 0) }
-    ] | par-each {|r|
-        $r | try-copy
-    } | flatten | append [
-        (configure-posh)
-    ] | table
+    {src: (resolve config.nu) dst: $nu.config-path}
+    | append {src: (resolve lib * | into glob) dst: ($nu.user-autoload-dirs | reverse | get 0) }
+    | append {src: (resolve helix * | into glob) dst: ($nu.default-config-dir | path basename -r helix)}
+    | par-each {|r| $r | try-copy } | flatten | append (configure-posh)
 }

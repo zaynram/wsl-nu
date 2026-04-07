@@ -171,7 +171,7 @@
                     "foreground_templates": ["{{ if .Error }}#e78284{{ end }}"],
                     "options": {
                         "always_enabled": true,
-                        "status_template": "\u203a"
+                        "status_template": "➜"
                     },
                     "template": "\u200A<d>{{ .String }}</d>"
                 }
@@ -187,7 +187,7 @@
     },
     "enable_cursor_positioning": true,
     "shell_integration": true,
-    "console_title_template": "{{if .Root}}[admin] {{end}}{{.PWD}}",
+    "console_title_template": "{{if .Root}}(admin) {{end}}{{.PWD}}",
     "final_space": true,
     "transient_prompt": {
         "foreground": "p:success",

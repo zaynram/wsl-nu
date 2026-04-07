@@ -42,9 +42,9 @@
                 "Close": "<p:blue>)</>"
             },
             "Trait": {
-                "Open": "<p:overlay0>#[</><p:subtext0>",
+                "Open": "<d><p:overlay0>#[</><p:subtext0>",
                 "Inner": "(</>",
-                "Close": "<p:subtext0>)</><p:overlay0>]</>"
+                "Close": "<p:subtext0>)</><p:overlay0>]</></d>"
             }
         }
     },
@@ -57,7 +57,7 @@
                     "type": "git",
                     "style": "plain",
                     "foreground": "p:text",
-                    "template": "{{ if .WSL }}<d>{{ end }}{{ $trait := .Var.Rust.Trait }}{{ if .Working.Changed }}{{ $trait.Open }}{{ .Ref }}{{ $trait.Inner }}</><p:red>*</><p:peach>{{ .Working.String }}</>{{ if gt .Behind 0 }}<p:mauve>↓</>{{ end }}{{ if gt .Ahead 0 }}<p:mauve>↑</>{{ end }}{{ else }}{{ $trait.Open }}origin{{ $trait.Inner }}<p:link>{{ trimSuffix \".git\" (trimPrefix \"https://github.com/\" .Remotes.origin) }}</>{{ end }}{{ $trait.Close }}{{ if .WSL }}</d>{{ end }}",
+                    "template": "{{ $trait := .Var.Rust.Trait }}{{ if .Working.Changed }}{{ $trait.Open }}{{ .Ref }}{{ $trait.Inner }}</><p:red>*</><p:peach>{{ .Working.String }}</>{{ if gt .Behind 0 }}<p:mauve>↓</>{{ end }}{{ if gt .Ahead 0 }}<p:mauve>↑</>{{ end }}{{ else }}{{ $trait.Open }}origin{{ $trait.Inner }}<p:link>{{ trimSuffix \".git\" (trimPrefix \"https://github.com/\" .Remotes.origin) }}</>{{ end }}{{ $trait.Close }}",
                     "options": {
                         "fetch_status": true,
                         "fetch_upstream_icon": true,
@@ -162,7 +162,7 @@
                     "type": "session",
                     "style": "plain",
                     "foreground": "p:lavender",
-                    "template": "<b>{{ if .Root }}root{{ else }}{{ .UserName }}{{ end }}</b> "
+                    "template": "<b>{{ if .Root }}root{{ else }}{{ .UserName }}{{ end }}</b>\u200a"
                 },
                 {
                     "type": "status",
@@ -173,7 +173,7 @@
                         "always_enabled": true,
                         "status_template": "\u00bb"
                     },
-                    "template": "{{ if .WSL }}<d>{{ .String }}</d>{{ else }}{{ .String }}{{ end }}"
+                    "template": "<d>{{ .String }}</d>"
                 }
             ],
             "type": "prompt"

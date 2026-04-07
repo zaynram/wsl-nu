@@ -6,13 +6,14 @@
 
 # ——— constants ———————————————————————————————————————————————————————————————
 const DATA = $nu.data-dir | path dirname
+const NU_LIB_DIRS = [
+    ($nu.data-dir | path join modules)
+]
 const NU_PLUGIN_DIRS = [
     ($nu.current-exe | path dirname)
     ($nu.data-dir | path join "plugins" | path join (version).version)
     ($nu.config-path | path dirname | path join "plugins")
 ]
-
-# ——— immutables ——————————————————————————————————————————————————————————————
 
 # ——— imports——————————————————————————————————————————————————————————————————
 use std/util "path add"
@@ -22,20 +23,15 @@ $env.VISUAL = (try { which code-insiders | get path | get 0 })
 $env.EDITOR = (try { which hx | get path | get 0 } | default nano)
 
 $env.NUPM_HOME = [$DATA nupm] | path join
+$env.NU_LIB_DIRS | append ($env.NUPM_HOME | path join modules)
 path add ([$env.NUPM_HOME scripts] | path join)
+
 $env.PNPM_HOME = [$DATA pnpm] | path join
 path add $env.PNPM_HOME
 
-$env.NU_LIB_DIRS ++= [
-    ([$env.NUPM_HOME modules] | path join)
-    ([$nu.home-dir code nu lib] | path join)
-]
-
-[.pixi .bun .cargo]
-| par-each { [$nu.home-dir $in bin] | path join }
+[.pixi .bun .cargo] | par-each {|| prepend $nu.home-dir | path join bin }
 | append "/home/linuxbrew/.linuxbrew/bin"
-| where ($it | path exists)
-| par-each { path add $in }
+| par-each {|p|  if ($p | path type) == dir { path add $p } }
 
 $env.path = ($env.path | split row (char esep) | uniq)
 
@@ -56,7 +52,7 @@ $env.config.keybindings ++= [
 ]
 
 # ——— activation ——————————————————————————————————————————————————————————————
-
+overlay use custom.nu
 
 # ——— prompt ——————————————————————————————————————————————————————————————————
-try { print $"(ansi cyan)(fortune)(ansi reset)" }
+try { print $"(ansi c)(fortune)(ansi rst)" }

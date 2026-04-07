@@ -1,8 +1,15 @@
 const HERE = path self .
+const MODULES = $nu.data-dir | path join modules
+const HELIX = $nu.default-config-dir | path basename -r helix
 
-def resolve [...segments: string]: [
+def resolve [...segments: string --glob (-g)]: [
     nothing -> path
-] { $HERE | path join ...$segments }
+    nothing -> glob
+] {|| prepend $HERE
+    | append $segments
+    | path join
+    | if $glob { $in | into glob } else { $in }
+}
 
 def inform []: [
     record<src: string, dst: string> -> record<name: string, path: string>
@@ -23,10 +30,9 @@ def inform []: [
 
 def try-copy []: [
     record<src: glob, dst: string> -> list<record<name: string, path: string>>
-] {|| do {|src, dst| $dst
-        | path dirname
-        | if not ($in | path exists) { mkdir $in }
-        if ($src | describe) != glob { [$src] } else { $src
+] {|| do {|src, dst| $src
+        | describe
+        | if $in != glob { [$src] } else { $src
             | into string
             | let str
             | path dirname
@@ -48,12 +54,13 @@ def try-copy []: [
     } ...($in | values)
 }
 
-def configure-posh []: [
-    nothing -> record<name: string path: string>
-] { ($nu.vendor-autoload-dirs | reverse).0
+def configure-posh []: nothing -> record<name: string path: string> {
+    $nu.vendor-autoload-dirs
+    | reverse
+    | get 0
     | path join oh-my-posh.nu
     | let script
-    | resolve custom.omp.json
+    resolve custom.omp.json
     | let custom
     | try { oh-my-posh init nu --config $in --print
         | save $script --force --progress
@@ -69,9 +76,13 @@ def configure-posh []: [
     }
 }
 
-def main []: any -> table {
-    {src: (resolve config.nu) dst: $nu.config-path}
-    | append {src: (resolve lib * | into glob) dst: ($nu.user-autoload-dirs | reverse | get 0) }
-    | append {src: (resolve helix * | into glob) dst: ($nu.default-config-dir | path basename -r helix)}
-    | par-each {|r| $r | try-copy } | flatten | append (configure-posh)
+def main []: any -> table { [
+        {src: (resolve config.nu)       dst: $nu.config-path}
+        {src: (resolve helix * --glob)  dst: $HELIX}
+        {src: (resolve lib *.nu --glob) dst: $MODULES }
+    ] | par-each {|r| get dst
+        | path type
+        | if $in != file { mkdir $r.dst }
+        $r | try-copy
+    } | append (configure-posh) | flatten
 }

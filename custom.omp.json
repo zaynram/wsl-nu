@@ -173,7 +173,7 @@
                         "always_enabled": true,
                         "status_template": "\u00bb"
                     },
-                    "template": "<d>{{ .String }}</d>"
+                    "template": "{{ .String }}"
                 }
             ],
             "type": "prompt"

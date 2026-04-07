@@ -171,7 +171,7 @@
                     "foreground_templates": ["{{ if .Error }}#e78284{{ end }}"],
                     "options": {
                         "always_enabled": true,
-                        "status_template": "\u00bb"
+                        "status_template": "{{ if .WSL }}\u00bb{{ else }}>>>{{ end }}"
                     },
                     "template": "{{ .String }}"
                 }

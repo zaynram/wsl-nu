@@ -39,8 +39,9 @@ export module edit {
 # ——— info ————————————————————————————————————————————————————————————————————
 
 export module info {
-    export alias la = ls -af
-    export alias ll = ls -l
+    export alias la = ls --all --full-paths
+    export alias ll = ls --full-paths
+    export alias ld = ls --directory
 }
 
 # ——— navigate ————————————————————————————————————————————————————————————————

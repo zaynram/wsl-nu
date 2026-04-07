@@ -162,7 +162,7 @@
                     "type": "session",
                     "style": "plain",
                     "foreground": "p:lavender",
-                    "template": "<b>{{ if .Root }}root{{ else }}{{ .UserName }}{{ end }}</b>"
+                    "template": "<b>{{ if .Root }}root{{ else }}{{ .UserName }}{{ end }}</b> "
                 },
                 {
                     "type": "status",
@@ -171,9 +171,9 @@
                     "foreground_templates": ["{{ if .Error }}#e78284{{ end }}"],
                     "options": {
                         "always_enabled": true,
-                        "status_template": "➜"
+                        "status_template": "\u00bb"
                     },
-                    "template": "\u200A<d>{{ .String }}</d>"
+                    "template": "<d>{{ .String }}</d>"
                 }
             ],
             "type": "prompt"
@@ -192,7 +192,7 @@
     "transient_prompt": {
         "foreground": "p:success",
         "foreground_templates": ["{{ if gt .Code 0 }}#ea999c{{ end }}"],
-        "template": "➜ "
+        "template": "\u00bb "
     },
     "version": 3
 }

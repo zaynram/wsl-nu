@@ -192,7 +192,7 @@
     "transient_prompt": {
         "foreground": "p:success",
         "foreground_templates": ["{{ if gt .Code 0 }}#ea999c{{ end }}"],
-        "template": "\u203a "
+        "template": "➜ "
     },
     "version": 3
 }

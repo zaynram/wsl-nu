@@ -167,13 +167,13 @@
                 {
                     "type": "status",
                     "style": "plain",
-                    "foreground": "p:overlay0",
+                    "foreground": "p:surface1",
                     "foreground_templates": ["{{ if .Error }}#e78284{{ end }}"],
                     "options": {
                         "always_enabled": true,
-                        "status_template": "{{ if .WSL }}\u00bb{{ else }}>>>{{ end }}"
+                        "status_template": "\u00bb"
                     },
-                    "template": "{{ .String }}"
+                    "template": "{{ if .WSL }}<d>{{ .String }}</d>{{ else }}{{ .String }}{{ end }}"
                 }
             ],
             "type": "prompt"

@@ -154,7 +154,7 @@
                 {
                     "foreground": "p:surface1",
                     "style": "plain",
-                    "template": "\u2514 ",
+                    "template": "\u2514 ",
                     "type": "text"
                 },
 
@@ -171,9 +171,9 @@
                     "foreground_templates": ["{{ if .Error }}#e78284{{ end }}"],
                     "options": {
                         "always_enabled": true,
-                        "status_template": ">>>"
+                        "status_template": "\u203a"
                     },
-                    "template": " <d>{{ .String }}</d>"
+                    "template": "\u200A<d>{{ .String }}</d>"
                 }
             ],
             "type": "prompt"
@@ -192,7 +192,7 @@
     "transient_prompt": {
         "foreground": "p:success",
         "foreground_templates": ["{{ if gt .Code 0 }}#ea999c{{ end }}"],
-        "template": ">>> "
+        "template": "\u203a "
     },
     "version": 3
 }

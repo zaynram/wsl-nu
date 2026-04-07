@@ -42,9 +42,9 @@
                 "Close": "<p:blue>)</>"
             },
             "Trait": {
-                "Open": "<p:surface1>#[</><d><p:subtext0>",
+                "Open": "<d><p:overlay0>#[</><p:subtext0>",
                 "Inner": "(</>",
-                "Close": "<p:subtext0>)</><p:surface1></d>]</>"
+                "Close": "<p:subtext0>)</><p:overlay0>]</></d>"
             }
         }
     },
@@ -95,7 +95,7 @@
                     "type": "os",
                     "style": "plain",
                     "foreground": "p:red",
-                    "template": "{{ .Icon }}{{ .Var.Rust.Separator }}",
+                    "template": "{{ if .WSL }}wsl{{ .Var.Rust.Separator }}{{ end }}{{ .Icon }}{{ .Var.Rust.Separator }}",
                     "options": {
                         "display_distro_name": true,
                         "windows": "windows",
@@ -107,16 +107,10 @@
                     }
                 },
                 {
-                    "type": "shell",
-                    "style": "plain",
-                    "foreground": "p:flamingo",
-                    "template": "{{ .Name }}{{ .Var.Rust.Separator }}"
-                },
-                {
                     "type": "path",
                     "style": "plain",
                     "foreground": "p:text",
-                    "template": "{{ $m := .Var.Rust.Macro }}{{ $m.Open }}dir{{ $m.Inner }}{{ lower .Path }}{{ $m.Close }}",
+                    "template": "{{ $m := .Var.Rust.Macro }}{{ $m.Open }}cwd{{ $m.Inner }}{{ lower .Path }}{{ $m.Close }}",
                     "options": {
                         "style": "agnoster_full",
                         "home_icon": "~",
@@ -134,7 +128,13 @@
                     "style": "plain",
                     "type": "executiontime",
                     "foreground": "p:warning",
-                    "template": "{{ .Ms }}ms "
+                    "template": "<d>{{ .FormattedMs }}</d> "
+                },
+                {
+                    "type": "shell",
+                    "style": "plain",
+                    "foreground": "p:subtext1",
+                    "template": "<d>{{ .Name }}</d> "
                 },
                 {
                     "style": "plain",
@@ -152,23 +152,28 @@
             "alignment": "left",
             "segments": [
                 {
+                    "foreground": "p:surface1",
+                    "style": "plain",
+                    "template": "\u2514 ",
+                    "type": "text"
+                },
+
+                {
                     "type": "session",
                     "style": "plain",
-                    "foreground": "p:pink",
-                    "template": "{{ if .Root }}^{{ end }}{{ .UserName }} "
+                    "foreground": "p:lavender",
+                    "template": "<b>{{ if .Root }}root{{ else }}{{ .UserName }}{{ end }}</b>"
                 },
                 {
-                    "foreground": "p:success",
-                    "foreground_templates": [
-                        "{{ if gt .Code 0 }}#e78284{{ end }}",
-                        "{{ if eq .Code 0 }}#babbf1{{ end }}"
-                    ],
-                    "options": {
-                        "always_enabled": true
-                    },
+                    "type": "status",
                     "style": "plain",
-                    "template": "\u276f",
-                    "type": "status"
+                    "foreground": "p:text",
+                    "foreground_templates": ["{{ if .Error }}#e78284{{ end }}"],
+                    "options": {
+                        "always_enabled": true,
+                        "status_template": ">>>"
+                    },
+                    "template": " <d>{{ .String }}</d>"
                 }
             ],
             "type": "prompt"
@@ -186,8 +191,8 @@
     "final_space": true,
     "transient_prompt": {
         "foreground": "p:success",
-        "foreground_templates": ["{{ if gt .Code 0 }}#e78284{{ end }}"],
-        "template": "\u276f "
+        "foreground_templates": ["{{ if gt .Code 0 }}#ea999c{{ end }}"],
+        "template": ">>> "
     },
     "version": 3
 }

@@ -32,8 +32,7 @@ export module each {
 # ——— edit ————————————————————————————————————————————————————————————————————
 
 export module edit {
-    export alias vsc = try { ^code-insiders }
-    export alias mse = try { ^edit }
+    export alias code = ^code-insiders
 }
 
 # ——— info ————————————————————————————————————————————————————————————————————

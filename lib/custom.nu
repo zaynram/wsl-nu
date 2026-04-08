@@ -7,12 +7,16 @@ export module path {
     export alias px = path expand
 }
 
+export use path *
+
 # ——— test ————————————————————————————————————————————————————————————————————
 
 export module test {
     export alias has-prefix = str starts-with
     export alias has-suffix = str ends-with
 }
+
+export use test *
 
 # ——— repo ————————————————————————————————————————————————————————————————————
 
@@ -22,6 +26,8 @@ export module repo {
     export alias clone = gh repo clone
 }
 
+export use repo *
+
 # ——— each ————————————————————————————————————————————————————————————————————
 
 export module each {
@@ -29,11 +35,15 @@ export module each {
     export alias index = enumerate
 }
 
+export use each *
+
 # ——— edit ————————————————————————————————————————————————————————————————————
 
 export module edit {
     export alias code = ^code-insiders
 }
+
+export use edit *
 
 # ——— info ————————————————————————————————————————————————————————————————————
 
@@ -42,6 +52,16 @@ export module info {
     export alias ll = ls --full-paths
     export alias ld = ls --directory
 }
+
+export use info *
+
+# ——— http ————————————————————————————————————————————————————————————————————
+
+export module http {
+    export alias curl = http get --raw
+}
+
+export use http *
 
 # ——— navigate ————————————————————————————————————————————————————————————————
 
@@ -66,6 +86,8 @@ export module navigate {
     }
 }
 
+export use navigate *
+
 # ——— manage ——————————————————————————————————————————————————————————————————
 
 export module manage {
@@ -82,13 +104,4 @@ export module manage {
     }
 }
 
-# ——— main ————————————————————————————————————————————————————————————————————
-
-export use path *
-export use test *
-export use repo *
-export use each *
-export use edit *
-export use info *
-export use navigate *
 export use manage *

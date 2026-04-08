@@ -167,7 +167,7 @@
                 {
                     "type": "status",
                     "style": "plain",
-                    "foreground": "p:surface1",
+                    "foreground": "p:success",
                     "foreground_templates": ["{{ if .Error }}#e78284{{ end }}"],
                     "options": {
                         "always_enabled": true,

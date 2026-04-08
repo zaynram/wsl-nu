@@ -162,7 +162,7 @@
                     "type": "session",
                     "style": "plain",
                     "foreground": "p:lavender",
-                    "template": "<b>{{ if .Root }}root{{ else }}{{ .UserName }}{{ end }}</b>\u200a"
+                    "template": "<b>{{ if .Root }}root{{ else if .UserName }}{{ .UserName }}{{ else }}user{{ end }}</b>\u200a"
                 },
                 {
                     "type": "status",

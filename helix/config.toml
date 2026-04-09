@@ -1,13 +1,9 @@
 theme = "catppuccin_macchiato"
 
-[editor]
-line-number = "relative"
-mouse = false
-
 [editor.cursor-shape]
-insert = "bar"
+insert = "underline"
 normal = "block"
-select = "underline"
+select = "bar"
 
 [editor.file-picker]
 hidden = false

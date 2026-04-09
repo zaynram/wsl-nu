@@ -59,7 +59,7 @@ export module info {
     ] {|| default (try { ls $path | get 0 })
         | each { match ($in | describe) {
                 `string` => (if ($in | path exists) { ls $in | get 0 })
-                _      => $in
+                _        => $in
             } | $in == null or ((date now) - $in.modified > $max_age)
         }
     }

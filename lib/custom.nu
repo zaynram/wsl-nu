@@ -51,6 +51,13 @@ export module info {
     export alias la = ls --all --full-paths
     export alias ll = ls --full-paths
     export alias ld = ls --directory
+    export def stale [path?: path --max-age (-m): duration = 1day]: [
+        nothing -> bool
+        record<name: string, type: string, size: filesize, modified: datetime> -> bool
+        list<record<name: string, type: string, size: filesize, modified: datetime>> -> list<bool>
+    ] {|| default (try { ls $path | get 0 })
+        | each { $in == null or ((date now) - $in.modified > $max_age) }
+    }
 }
 
 export use info *

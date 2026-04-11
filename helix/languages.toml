@@ -12,7 +12,7 @@ language-servers = ["tombi"]
 name = "toml"
 
 [[language]]
-indent = { tab-size = 4, unit = " "}
+indent = { tab-width = 4, unit = " "}
 auto-format      = true
 file-types       = ["json", "jsonl", "code-workspace"]
 language-servers = ["vscode-json-language-server"]

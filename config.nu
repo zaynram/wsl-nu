@@ -1,14 +1,14 @@
 # ——— config.nu ———————————————————————————————————————————————————————————————
-# manager = homebrew
+# manager = cargo
 # version = "0.111.0"
 # docs = { cli: "config nu --doc | nu-highlight | less -R",
 #          web: "https://www.nushell.sh/book/configuration.html" }
 
 # ——— constants ———————————————————————————————————————————————————————————————
-const DATA = $nu.data-dir | path dirname
 const NU_LIB_DIRS = [
     ($nu.data-dir | path join modules)
 ]
+
 const NU_PLUGIN_DIRS = [
     ($nu.current-exe | path dirname)
     ($nu.data-dir | path join "plugins" | path join (version).version)
@@ -19,20 +19,26 @@ const NU_PLUGIN_DIRS = [
 use std/util "path add"
 
 # ——— environment —————————————————————————————————————————————————————————————
-$env.VISUAL = (try { which code-insiders | get path | get 0 })
-$env.EDITOR = (try { which hx | get path | get 0 } | default nano)
+load-env {
+    visual: (which code-insiders | get path | get --optional 0 | default code)
+    editor: (which hx | get path | get --optional 0 | default nano)
+    ...([pnpm nupm] | par-each {|el|
+        {$'($el)_home': ($nu.data-dir | path dirname | path join $el)}
+    } | into record)
+}
 
-$env.NUPM_HOME = [$DATA nupm] | path join
-$env.NU_LIB_DIRS | append ($env.NUPM_HOME | path join modules)
-path add ([$env.NUPM_HOME scripts] | path join)
+$env.nu_lib_dirs ++= [
+    ($env.nupm_home | path join modules)
+]
 
-$env.PNPM_HOME = [$DATA pnpm] | path join
-path add $env.PNPM_HOME
-
-[.pixi .bun .cargo] | par-each {|| prepend $nu.home-dir | path join bin }
-| append "/home/linuxbrew/.linuxbrew/bin"
-| par-each {|p|  if ($p | path type) == dir { path add $p } }
-
+path add {linux: /home/linuxbrew/.linuxbrew/bin}
+path add [
+    ($env.pnpm_home)
+    ($env.nupm_home | path join scripts)
+    ...([.local .pixi .bun .cargo go] | par-each {|el|
+        $nu.home-dir | path join $el bin
+    })
+]
 $env.path = ($env.path | split row (char esep) | uniq)
 
 # ——— configuration ———————————————————————————————————————————————————————————
@@ -46,13 +52,39 @@ $env.config.keybindings ++= [
         mode: [emacs vi_normal vi_insert]
         event: {
             send: executehostcommand
-            cmd: $"source '($nu.env-path)'; source '($nu.config-path)'"
+            cmd: ([
+                $nu.env-path
+                $nu.config-path
+                ...($nu.user-autoload-dirs
+                | first
+                | try { ls $in | get name } catch { [] })
+            ] | par-each { $'source `($in)`' } | str join '; ')
         }
     }
 ]
-
 # ——— activation ——————————————————————————————————————————————————————————————
 overlay use custom.nu
+
+# ——— main ————————————————————————————————————————————————————————————————————
+def main []: nothing -> nothing {
+    $nu.vendor-autoload-dirs
+    | where $it =~ ($env.user? | default $env.username? | default home)
+    | first
+    | let vendor_auto
+    | if not ($in | path exists) {
+        try { mkdir $in --verbose } catch { error make }
+    }
+    if (which carapace | length) > 0 {
+        load-env {carapace_lenient: 1 carapace_bridges: fish}
+        $vendor_auto
+        | path join carapace.nu
+        | if ($in | stale) { $in
+            | let path
+            | carapace _carapace nushell
+            | try { save --progress --force $path }
+        }
+    }
+}
 
 # ——— prompt ——————————————————————————————————————————————————————————————————
 try { print $"(ansi c)(fortune)(ansi rst)" }

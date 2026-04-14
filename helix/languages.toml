@@ -1,26 +1,30 @@
 [language-server]
-superhtml = { command = 'superhtml', args = ['lsp', '--syntax-only'] }
-
-[[language]]
-auto-format      = true
-formatter        = { command = "nufmt", args = ["--stdin"] }
-name             = "nu"
+superhtml = { command = "superhtml", args = ["lsp", "--syntax-only"] }
 
 [[language]]
 auto-format = true
+formatter   = { command = "nufmt", args = ["--stdin"] }
+name        = "nu"
+
+[[language]]
 language-servers = ["tombi"]
-name = "toml"
+name             = "toml"
 
 [[language]]
-indent = { tab-width = 4, unit = " "}
-auto-format      = true
-file-types       = ["json", "jsonl", "code-workspace"]
-language-servers = ["vscode-json-language-server"]
-name             = "json"
+comment-tokens = "//"
+file-types     = ["json", "jsonc", "json5", "code-workspace"]
+indent         = { tab-width = 4, unit = " " }
+name           = "json"
 
 
 [[language]]
 auto-format = true
-name = 'html'
-file-types = ['html', 'xml']
-formatter = { command = "superhtml", args = ["fmt", "--stdin", "--syntax-only"]}
+file-types = ["html", "xml"]
+formatter = { command = "superhtml", args = [
+    "fmt",
+    "--stdin",
+    "--syntax-only",
+] }
+language-servers = ["superhtml"]
+name = "html"
+soft-wrap = { enable = true }

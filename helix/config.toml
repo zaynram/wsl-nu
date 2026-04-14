@@ -1,9 +1,53 @@
-theme = "catppuccin_macchiato"
+[theme]
+dark = "catppuccin_macchiato"
+light = "catppuccin_latte"
+fallback = "catppuccin_frappe"
 
-[editor.cursor-shape]
-insert = "underline"
-normal = "block"
-select = "bar"
+[keys]
 
-[editor.file-picker]
-hidden = false
+    [keys.normal]
+    C-s = ":w" # Maps Ctrl-s to the typable command :write (save file)
+    C-o = ":open ~/.config/helix/config.toml" # Maps Ctrl-o to opening of the helix config file
+
+    S-tab = "move_parent_node_start"
+    tab   = "move_parent_node_end"
+
+    [keys.insert]
+    S-tab = "move_parent_node_start"
+
+    [keys.select]
+    S-tab = "extend_parent_node_start"
+    tab   = "extend_parent_node_end"
+
+[editor]
+bufferline               = "multiple"
+rainbow-brackets         = true
+shell                    = ["bash", "-c"]
+trim-final-newlines      = true
+trim-trailing-whitespace = true
+
+    [editor.cursor-shape]
+    insert = "bar"
+    normal = "underline"
+    select = "block"
+
+    [editor.file-picker]
+    hidden = false
+
+    [editor.lsp]
+    display-inlay-hints = true
+
+    [editor.auto-save]
+    after-delay = { enable = true, timeout = 5000 }
+    focus-lost  = true
+
+    [editor.indent-guides]
+    character = "▏"
+    render    = true
+
+    [editor.inline-diagnostics]
+    cursor-line = "hint"
+    other-lines = "warning"
+
+    [editor.word-completion]
+    trigger-length = 5

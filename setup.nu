@@ -197,6 +197,7 @@ def "main helix" [
 ]: nothing -> nothing {
     show step (if ($grammars) { 'helix+grammars' } else { 'helix' })
     let current: string = try { hx --version } catch { '' }
+    let target: path = $nu.default-config-dir | path basename --replace helix
     if $current =~ '25.07' {
         show found $current
     } else if $nu.os-info.family == unix {
@@ -214,15 +215,21 @@ def "main helix" [
             error make "failed to install helix (winget)"
         }
     }
-    let target: path = $nu.default-config-dir | path basename --replace helix
+    match $nu.os-info.family {
+        windows => 'alternate'
+        unix    => 'helix'
+    } | let dirname: string
     try {
         if not ($target | path exists) { mkdir --verbose $target }
-        ls --short-names $target
-        | where ($it.type == file and ($it | stale))
+        ls --short-names $target | where type == file
     } catch {
         error make "unable to list files in the helix config directory"
     } | get name | iter {|n|
-        {src: (resolve helix $n) dst: ($target | path join $n)} | copy file
+        if $n =~ 'config.toml' {
+            {src: (resolve $dirname $n --glob) dst: $target}
+        } else {
+            {src: (resolve helix $n) dst: ($target | path join $n)}
+        } | copy file
     }
     if $grammars and (which hx | length) > 0 {
         try { hx --grammar fetch | complete }
@@ -416,9 +423,9 @@ def "main base" [
     if not $config { [] } else {
         [{src: (resolve config.nu) dst: $nu.config-path}]
     } | if not $autoload { $in } else {
-        $in | append {src: (resolve auto *.nu --glob) dst: $AUTO}
+        $in | append {src: (resolve auto *.nu --glob) dst: (try { mkdir $AUTO }; $AUTO)}
     } | if not $modules { $in } else {
-        $in | append {src: (resolve lib *.nu --glob)  dst: $LIB}
+        $in | append {src: (resolve lib *.nu --glob)  dst: (try { mkdir $LIB }; $LIB)}
     } | iter --keep-order { copy file } | ignore
 }
 

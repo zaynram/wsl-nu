@@ -1,12 +1,14 @@
+const HERE = path self .
+
 # Edit the autoloaded alias definition file
 @category configuration
 def "config alias" []: nothing -> nothing {
-    ^$env.config.buffer_editor (path self | path basename --replace alias.nu)
+    ^$env.config.buffer_editor ($HERE | path join alias.nu)
 }
 
 # Edit the autoloaded function definition file
 @category configuration
-def "config def" []: nothing -> nothing { ^$env.config.buffer_editor (path self) }
+def "config def" []: nothing -> nothing { ^$env.config.buffer_editor ($HERE | path join def.nu) }
 
 # Convenience wrapper for the automated setup script (~/code/nu/setup.nu)
 #

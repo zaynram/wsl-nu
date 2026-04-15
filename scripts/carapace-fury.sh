@@ -7,9 +7,9 @@ function write-list {
 deb [trusted=yes] https://apt.fury.io/rsteube/ /
 EOF
 )"
-    echo $text | sudo tee $path
+    echo $text | tee $path
 }
 
 write-list &&
-sudo apt-get update -y &&
-sudo apt-get install carapace-bin -y
+apt-get update -y &&
+apt-get install carapace-bin -y

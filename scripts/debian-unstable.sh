@@ -8,7 +8,7 @@ deb http://deb.debian.org/debian unstable main
 deb-src http://deb.debian.org/debian unstable main
 EOF
 )"
-    echo $text | sudo tee $path
+    echo $text | tee $path
 }
 
 function write-preferences {
@@ -28,10 +28,10 @@ Pin: release a=unstable
 Pin-Priority: 100
 EOF
 )"
-    echo $text | sudo tee $path
+    echo $text | tee $path
 }
 
 write-list &&
 write-preferences &&
-sudo apt-get update -y &&
-sudo apt-get upgrade -y
+apt-get update -y &&
+apt-get upgrade -y

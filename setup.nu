@@ -29,6 +29,11 @@ const LANGUAGE_SERVERS: list<string> = [
     nu-lint
 ]
 
+let pm_info: record<name: string sudo: bool args: list<string>> = match $nu.os-info {
+    {family: windows} => ({name: winget  sudo: false          args: [--disable-interactivity]})
+    {family: unix}    => ({name: apt-get sudo: (command sudo) args: [--yes]})
+}
+
 #MARK: Logging
 
 def "show step" [name: string]: nothing -> nothing {
@@ -56,6 +61,10 @@ def "show copy" []: [
 }
 
 #MARK: Utilities
+
+def command [name: string]: nothing -> bool {
+    (which $name | compact | length) > 0
+}
 
 def resolve [...segments: string --glob (-g)]: [
     nothing -> path
@@ -106,18 +115,28 @@ def "parse version" [format_str: string = "{_} {major}.{minor}.{patch}"]: [
     )
 }
 
-def "bash script" [name: oneof<path string glob>]: nothing -> nothing {
+def "run bash" [...cmdline: string --script(-s): oneof<path glob>]: nothing -> nothing {
+    if not (command bash) { return }
+    let run = {|cmd: string|
+        let args = if $script == null { [-c $cmd] } else { [$cmd] }
+        if $pm_info.sudo { 
+            ^sudo bash ...$args
+        } else { 
+            ^bash ...$args
+        }
+    }
     try {
         cd $BIN
-        ls --short-names $name
-        | get name
-        | first
-        | bash $in
-        | complete
+        if $script != null {
+            ls --short-names $script | get name | first
+        } else {
+            $cmdline | str join ' '
+        } | let cmd: string
+        do $run $cmd | complete
     } | let output: record<stdout: string stderr: string exit_code: int>
-    if $env.LAST_EXIT_CODE != 0 {
+    if $env.LAST_EXIT_CODE != 0 and $output.stderr != "" {
         log error $output.stderr
-    } else {
+    } else if $output.stdout != "" {
         log info $output.stdout
     } | ignore
 }
@@ -150,6 +169,32 @@ def "install lsp" [...servers: string]: [
     } | ignore
 }
 
+def "dyn install" [package: string --winget-id(-i): string]: nothing -> nothing {
+    if $pm_info.name =~ winget and $winget_id != null {
+        $winget_id
+    } else {
+        $package
+    } | let target: string
+    try {
+        if $pm_info.sudo {
+            sudo $pm_info.name install $target ...$pm_info.args
+        } else {
+            ^$pm_info.name install $target ...$pm_info.args
+        } | print
+    } catch {|err|
+        error make {
+            msg: "package installation failed"
+            code: $env.LAST_EXIT_CODE
+            labels: [
+                {text: `package manager` span: (metadata $pm_info.name).span}
+                {text: `package name`    span: (metadata $target).span}
+                {text: `using sudo` span: (metadata $pm_info.sudo).span}
+            ]
+            inner: [$err]
+        }
+    } | ignore
+}
+
 # MARK: Subcommands
 
 # Install and configure oh-my-posh as the shell prompt handler.
@@ -159,18 +204,8 @@ def "main oh-my-posh" []: nothing -> nothing {
 
     if (which oh-my-posh | length) > 0 {
         show found $'oh-my-posh (oh-my-posh --version)'
-    } else if $nu.os-info.family == unix {
-        try {
-            sudo apt-get install oh-my-posh -y
-        } catch {
-            error make "failed to install oh-my-posh (apt)"
-        }
-    } else if $nu.os-info.family == windows {
-        try {
-            winget install oh-my-posh --disable-interactivity
-        } catch {
-            error make "failed to install oh-my-posh (winget)"
-        }
+    } else {
+        dyn install oh-my-posh
     }
     let script: path = $nu.vendor-autoload-dirs | last | path join oh-my-posh.nu
     let custom: path = (resolve custom.omp.json)
@@ -196,29 +231,24 @@ def "main helix" [
     --grammars (-g) # fetch and build language grammar trees
 ]: nothing -> nothing {
     show step (if ($grammars) { 'helix+grammars' } else { 'helix' })
+    
     let current: string = try { hx --version } catch { '' }
     let target: path = $nu.default-config-dir | path basename --replace helix
+    
     if $current =~ '25.07' {
         show found $current
-    } else if $nu.os-info.family == unix {
-        try {
-            bash script debian-unstable.sh
-            sudo apt-get install hx -y
-            log info $" (ansi g)installed (helix --version)(ansi rst)"
-        } catch {
-            error make "failed to update helix from unstable repository"
+    } else {
+        if $pm_info.name =~ apt {
+            run bash --script debian-unstable.sh
         }
-    } else if $nu.os-info.family == windows {
-        try {
-            winget install helix --disable-interactivity
-        } catch {
-            error make "failed to install helix (winget)"
-        }
+        dyn install hx --winget-id Helix.Helix
     }
+    
     match $nu.os-info.family {
         windows => 'alternate'
         unix    => 'helix'
     } | let dirname: string
+    
     try {
         if not ($target | path exists) { mkdir --verbose $target }
         ls --short-names $target | where type == file
@@ -231,6 +261,7 @@ def "main helix" [
             {src: (resolve helix $n) dst: ($target | path join $n)}
         } | copy file
     }
+    
     if $grammars and (which hx | length) > 0 {
         try { hx --grammar fetch | complete }
         try { hx --grammar build | complete }
@@ -243,16 +274,9 @@ def "main zellij" []: nothing -> nothing {
     show step zellij
     if (which zellij | length) > 0 {
         zellij --version | show found $in
-    } else if $nu.os-info.family == windows {
+    } else if (command cargo) {
         try {
-            winget install zellij --disable-interactivity
-        } catch {
-            error make "failed to install zellij (winget)"
-        }
-    } else if (which cargo | length) > 0 {
-        try {
-            let ls: list<string> = (cargo --list | complete | get stdout | find binstall)
-            if ($ls | length) > 0 {
+            if (command cargo-binstall) {
                 cargo binstall zellij
             } else {
                 cargo install --locked zellij
@@ -260,6 +284,8 @@ def "main zellij" []: nothing -> nothing {
         } catch {
             error make 'failed to install zellij (cargo)'
         }
+    } else {
+        dyn install zellij
     }
     try {
         let target = ($nu.default-config-dir | path basename --replace zellij)
@@ -268,13 +294,13 @@ def "main zellij" []: nothing -> nothing {
     } catch {
         error make "failed to write zellij configuration files"
     }
-    if $nu.os-info.family == unix and (which carapace | length) > 0 {
+    if $nu.os-info.family == unix and (command carapace) {
         let fish_completions = '/usr/share/fish/vendor_completions.d/'
         try {
             mkdir --verbose $fish_completions
             let tmp = mktemp --suffix .fish
             $"(zellij setup --generate-completion fish)" | save --raw --force $tmp
-            sudo mv $"($tmp)" $"($fish_completions | path join zellij.fish)"
+            run bash mv $"($tmp)" $"($fish_completions | path join zellij.fish)"
             {src: `zellij.fish` dst: $fish_completions} | show copy
         } catch {
             error make "failed to setup zellij completions"
@@ -293,7 +319,7 @@ def "main carapace" []: nothing -> nothing {
             | get --optional 0.version
         )"
     } else if $nu.os-info.family == unix {
-        bash script carapace-fury.sh
+        run bash --script carapace-fury.sh
     } else {
         log warning "skipping carapace setup; os is not unix"
     } | ignore
@@ -432,7 +458,7 @@ def "main base" [
 # Run the full setup suite (caution: opinionated)
 #
 def main [--all(-a)]: nothing -> nothing {
-    main base --config --autoload  --modules
+    main base --config --autoload --modules
     if $all {
         main servers --install
         main helix --grammars

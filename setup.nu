@@ -9,6 +9,7 @@ overlay use ./lib/custom.nu
 const HERE = path self .
 const AUTO = $nu.user-autoload-dirs | get --optional 0
 const LIB = $nu.data-dir | path join modules
+const BIN = $HERE | path join scripts
 
 #MARK: Data
 
@@ -31,13 +32,11 @@ const LANGUAGE_SERVERS: list<string> = [
 #MARK: Logging
 
 def "show step" [name: string]: nothing -> nothing {
-    log info $" setting up: (ansi c)($name)(ansi rst)"
-    ignore
+    log info $"setting up: (ansi c)($name)(ansi rst)"
 }
 
 def "show found" [desc: string --noun (-n): string = install]: nothing -> nothing {
-    log info $" found existing ($noun): (ansi b)($desc)(ansi rst)"
-    ignore
+    log info $"found existing ($noun): (ansi b)($desc)(ansi rst)"
 }
 
 def "show copy" []: [
@@ -51,9 +50,9 @@ def "show copy" []: [
         } | let style: string
         if $dst =~ $name { $dst } else { $dst | path join $name }
         | str replace $nu.home-dir ~
-        | $'($style)($name)(ansi rst) -> (ansi rst)(ansi lime)($in)(ansi rst)'
-        | log info $' ($in)'
+        | log info $'($style)($name)(ansi rst) -> (ansi rst)(ansi lime)($in)(ansi rst)'
     } ...$in
+    | ignore
 }
 
 #MARK: Utilities
@@ -89,7 +88,7 @@ def "copy file" []: [
                 {text: `output` span: (metadata $dst).span}
             ]
         }
-    }
+    } | ignore
 }
 
 def "parse version" [format_str: string = "{_} {major}.{minor}.{patch}"]: [
@@ -107,28 +106,48 @@ def "parse version" [format_str: string = "{_} {major}.{minor}.{patch}"]: [
     )
 }
 
+def "bash script" [name: oneof<path string glob>]: nothing -> nothing {
+    try {
+        cd $BIN
+        ls --short-names $name
+        | get name
+        | first
+        | bash $in
+        | complete
+    } | let output: record<stdout: string stderr: string exit_code: int>
+    if $env.LAST_EXIT_CODE != 0 {
+        log error $output.stderr
+    } else {
+        log info $output.stdout
+    } | ignore
+}
+
 def "install lsp" [...servers: string]: [
     nothing -> nothing
     list<string> -> nothing
 ] {|| default []
     | append $servers
-    | iter {|lsp| match $in {
-            rust-analyzer                => { rustup component add rust-src }
-            pyright                      => { pixi global install --expose pyright --expose pyright-langserver pyright }
-            ruff                         => { pixi global install ruff }
-            marksman                     => { pixi global install marksman }
-            tombi                        => { pixi global install tombi }
-            typescript-language-server   => { bun --global install typescript typescript-language-server }
-            oxlint                       => { bun --global install oxlint }
-            prettier                     => { bun --global install prettier }
-            vscode-langservers-extracted => { bun --global install vscode-langservers-extracted }
-            yaml-language-server         => { bun --global install yaml-language-server }
-            bash-language-server         => { bun --global install bash-language-server }
-            nufmt                        => { cargo install --git https://github.com/nushell/nufmt }
-            nu-lint                      => { cargo install nu-lint }
+    | iter {|lsp| try {
+            match $lsp {
+                rust-analyzer                => { rustup component add rust-src }
+                pyright                      => { pixi global install --expose pyright --expose pyright-langserver pyright }
+                ruff                         => { pixi global install ruff }
+                marksman                     => { pixi global install marksman }
+                tombi                        => { pixi global install tombi }
+                typescript-language-server   => { bun --global install typescript typescript-language-server }
+                oxlint                       => { bun --global install oxlint }
+                prettier                     => { bun --global install prettier }
+                vscode-langservers-extracted => { bun --global install vscode-langservers-extracted }
+                yaml-language-server         => { bun --global install yaml-language-server }
+                bash-language-server         => { bun --global install bash-language-server }
+                nufmt                        => { cargo install --git https://github.com/nushell/nufmt }
+                nu-lint                      => { cargo install nu-lint }
+            }
+            {src: $lsp dst: (which $lsp | get 0.path)} | show copy
+        } catch {
+            log error $'failed to install language server: ($lsp)'
         }
-        try { {src: $lsp dst: (which $lsp | get 0.path)} | show copy }
-    }
+    } | ignore
 }
 
 # MARK: Subcommands
@@ -137,21 +156,20 @@ def "install lsp" [...servers: string]: [
 @category prompt
 def "main oh-my-posh" []: nothing -> nothing {
     show step oh-my-posh+config
-    which oh-my-posh
-    | get --optional 0.path
-    | let omp: path
-    if $omp != null { show found (oh-my-posh --version) } else {
+
+    if (which oh-my-posh | length) > 0 {
+        show found $'oh-my-posh (oh-my-posh --version)'
+    } else if $nu.os-info.family == unix {
         try {
-            match $nu.os-info {
-                {family: `windows`} => {
-                    pwsh -nop -noni -c "winget install oh-my-posh --disable-interactivity"
-                }
-                {family: `unix`}    => {
-                    sudo bash "apt-get install oh-my-posh -y"
-                }
-            }
+            sudo apt-get install oh-my-posh -y
         } catch {
-            error make "failed to install oh-my-posh using system package manager"
+            error make "failed to install oh-my-posh (apt)"
+        }
+    } else if $nu.os-info.family == windows {
+        try {
+            winget install oh-my-posh --disable-interactivity
+        } catch {
+            error make "failed to install oh-my-posh (winget)"
         }
     }
     let script: path = $nu.vendor-autoload-dirs | last | path join oh-my-posh.nu
@@ -167,7 +185,7 @@ def "main oh-my-posh" []: nothing -> nothing {
                 {text: `output` span: (metadata $script).span}
             ]
         }
-    }
+    } | ignore
 }
 
 # Install and configure Helix as a modal editor. Tree-sitter grammars can be fetched and built with the --grammar flag.
@@ -176,67 +194,66 @@ def "main oh-my-posh" []: nothing -> nothing {
 @category editor
 def "main helix" [
     --grammars (-g) # fetch and build language grammar trees
-]: [
-    nothing -> nothing
-] {
+]: nothing -> nothing {
     show step (if ($grammars) { 'helix+grammars' } else { 'helix' })
-
     let current: string = try { hx --version } catch { '' }
-    if $current =~ '25.07' { show found $current } else { $HERE
-        | path join scripts debian-unstable.sh
-        | let script: path
+    if $current =~ '25.07' {
+        show found $current
+    } else if $nu.os-info.family == unix {
         try {
-            bash $script
-            sudo bash 'apt-get install hx -y'
+            bash script debian-unstable.sh
+            sudo apt-get install hx -y
             log info $" (ansi g)installed (helix --version)(ansi rst)"
         } catch {
-            error make {
-                msg: "failed to update helix from unstable repository"
-                labels: [
-                    {text: `script`, span: (metadata $script).span}
-                ]
-            }
+            error make "failed to update helix from unstable repository"
+        }
+    } else if $nu.os-info.family == windows {
+        try {
+            winget install helix --disable-interactivity
+        } catch {
+            error make "failed to install helix (winget)"
         }
     }
-
     let target: path = $nu.default-config-dir | path basename --replace helix
     try {
         if not ($target | path exists) { mkdir --verbose $target }
         ls --short-names $target
-        | where type == file and ($it | stale)
+        | where ($it.type == file and ($it | stale))
     } catch {
         error make "unable to list files in the helix config directory"
     } | get name | iter {|n|
         {src: (resolve helix $n) dst: ($target | path join $n)} | copy file
     }
-
-    if not $grammars or (which hx | get --optional 0.path) == null { return }
-
-    try { hx --grammar fetch | err>(null-device) }
-    try { hx --grammar build | err>(null-device) }
+    if $grammars and (which hx | length) > 0 {
+        try { hx --grammar fetch | complete }
+        try { hx --grammar build | complete }
+    } | ignore
 }
 
 # Install and configure Zellij, along with completions if carapace is installed.
 @category multiplexer
-def "main zellij" []: [
-    nothing -> nothing
-] {
+def "main zellij" []: nothing -> nothing {
     show step zellij
     if (which zellij | length) > 0 {
-        show found $'(zellij --version)'
-    } else {
+        zellij --version | show found $in
+    } else if $nu.os-info.family == windows {
         try {
-            let ls = cargo --list | find binstall
+            winget install zellij --disable-interactivity
+        } catch {
+            error make "failed to install zellij (winget)"
+        }
+    } else if (which cargo | length) > 0 {
+        try {
+            let ls: list<string> = (cargo --list | complete | get stdout | find binstall)
             if ($ls | length) > 0 {
                 cargo binstall zellij
             } else {
                 cargo install --locked zellij
             }
         } catch {
-            error make 'failed to install zellij'
+            error make 'failed to install zellij (cargo)'
         }
     }
-
     try {
         let target = ($nu.default-config-dir | path basename --replace zellij)
         if not ($target | path exists) { mkdir --verbose $target }
@@ -244,8 +261,7 @@ def "main zellij" []: [
     } catch {
         error make "failed to write zellij configuration files"
     }
-
-     if ($nu.os-info.family == unix) and (which carapace | get --optional 0.path) != null {
+    if $nu.os-info.family == unix and (which carapace | length) > 0 {
         let fish_completions = '/usr/share/fish/vendor_completions.d/'
         try {
             mkdir --verbose $fish_completions
@@ -256,14 +272,12 @@ def "main zellij" []: [
         } catch {
             error make "failed to setup zellij completions"
         }
-    }
+    } | ignore
 }
 
 # Install carapace-bin for externally sourced shell completions
 @category completion
-def "main carapace" []: [
-    nothing -> nothing
-] {
+def "main carapace" []: nothing -> nothing {
     show step carapace
     if (which carapace | length) > 0 {
         show found $"(
@@ -271,10 +285,11 @@ def "main carapace" []: [
             | parse '{version} ({_}) [{_}]'
             | get --optional 0.version
         )"
+    } else if $nu.os-info.family == unix {
+        bash script carapace-fury.sh
     } else {
-        let script: path = $HERE | path join scripts carapace-fury.sh
-        try { bash $script }
-    }
+        log warning "skipping carapace setup; os is not unix"
+    } | ignore
 }
 
 # Inventory and (optionally) install language servers consumed by the Helix language configuration.
@@ -287,14 +302,14 @@ def "main servers" [
         PATH: $env.path
         RUSTUP_HOME: ($env.RUSTUP_HOME? | default ($nu.home-dir | path join .rustup))
     } {
-        rustup show active-toolchain
-        | split words
-        | first
-        | let toolchain: string
-
-        path add ($env.RUSTUP_HOME | path join toolchains $toolchain bin)
+        try {
+            rustup show active-toolchain
+            | split words
+            | first
+            | let toolchain: string
+            path add ($env.RUSTUP_HOME | path join toolchains $toolchain bin)
+        }
         $env.path = ($env.path | split row (char esep) | uniq | where ($it | path exists))
-
         # --- resolve each candidate ---
         $LANGUAGE_SERVERS
         | sort --natural
@@ -307,18 +322,18 @@ def "main servers" [
                 $path != null
             } | let found: bool
             {name: $name found: $found}
+        } | let data: table<name: string found: bool>
+        if $install { $data
+            | where not found
+            | get name
+            | if ($in | length) > 0 { $in | install lsp } else {
+                log info $"(ansi g)all servers are installed(ansi rst)"
+            }
+        } else { $data
+            | table --index false
+            | print
         }
-    } | let data: table<name: string found: bool>
-    if $install { $data
-        | where not found
-        | get name
-        | if ($in | length) > 0 { $in | install lsp } else {
-            log info $" (ansi g)all servers are installed(ansi rst)"
-        }
-    } else { $data
-        | table --index false
-        | print
-    }
+    } | ignore
 }
 
 # Show information about the Nushell environment.
@@ -354,7 +369,7 @@ def "main info" [
                 )
             }
         } | table --index false --expand | print
-    }
+    } | ignore
 }
 
 # Save or update a file in the repository from this machine's copy.
@@ -379,7 +394,9 @@ def "main save" [
         | if not $in { try { mkdir --verbose $target } catch { error make } }
         $target
     }
-    {src: $source dst: $destination} | copy file
+    {src: $source dst: $destination}
+    | copy file
+    | ignore
 }
 
 # MARK: Main
@@ -402,18 +419,18 @@ def "main base" [
         $in | append {src: (resolve auto *.nu --glob) dst: $AUTO}
     } | if not $modules { $in } else {
         $in | append {src: (resolve lib *.nu --glob)  dst: $LIB}
-    } | iter --keep-order { copy file }
+    } | iter --keep-order { copy file } | ignore
 }
 
 # Run the full setup suite (caution: opinionated)
 #
-def main []: nothing -> nothing {
-    for c in [
-        { main base --config --autoload  --modules }
-        { main servers --install }
-        { main helix --grammars }
-        { main carapace }
-        { main zellij }
-        { main oh-my-posh }
-    ] { do --ignore-errors $c }
+def main [--all(-a)]: nothing -> nothing {
+    main base --config --autoload  --modules
+    if $all {
+        main servers --install
+        main helix --grammars
+        main zellij
+        main carapace
+        main oh-my-posh
+    }
 }

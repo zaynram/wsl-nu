@@ -1,18 +1,62 @@
 #!/usr/bin/env nu
 use std/log
+use std/util ["path add" null-device]
+
 overlay use ./lib/custom.nu
 
+#MARK: Paths
+
 const HERE = path self .
+const AUTO = $nu.user-autoload-dirs | get --optional 0
+const LIB = $nu.data-dir | path join modules
 
-#MARK: Helpers
+#MARK: Data
 
-def step [name: string]: nothing -> nothing {
-    log info $"setting up: (ansi c)($name)(ansi rst)"
+const LANGUAGE_SERVERS: list<string> = [
+    rust-analyzer
+    pyright
+    ruff
+    typescript-language-server
+    oxlint
+    prettier
+    vscode-langservers-extracted
+    yaml-language-server
+    marksman
+    bash-language-server
+    tombi
+    nufmt
+    nu-lint
+]
+
+#MARK: Logging
+
+def "show step" [name: string]: nothing -> nothing {
+    log info $" setting up: (ansi c)($name)(ansi rst)"
+    ignore
 }
 
-def found [desc: string --noun (-n): string = install]: nothing -> nothing {
-    log info $"found existing ($noun): (ansi b)($desc)(ansi rst)"
+def "show found" [desc: string --noun (-n): string = install]: nothing -> nothing {
+    log info $" found existing ($noun): (ansi b)($desc)(ansi rst)"
+    ignore
 }
+
+def "show copy" []: [
+    record<src: path, dst: string> -> nothing
+] {|| values
+    | do {|src: path, dst: string|
+        $src | path basename | let name: string
+        match ($src | path type) {
+            dir => (ansi steelblue1b)(ansi bo)
+            _   => (ansi steelblue1a)
+        } | let style: string
+        if $dst =~ $name { $dst } else { $dst | path join $name }
+        | str replace $nu.home-dir ~
+        | $'($style)($name)(ansi rst) -> (ansi rst)(ansi lime)($in)(ansi rst)'
+        | log info $' ($in)'
+    } ...$in
+}
+
+#MARK: Utilities
 
 def resolve [...segments: string --glob (-g)]: [
     nothing -> path
@@ -23,25 +67,8 @@ def resolve [...segments: string --glob (-g)]: [
     | if $glob { $in | into glob } else { $in }
 }
 
-def prettify []: [
-    record<src: string, dst: string> -> record<name: string, path: string>
-] {|| do {|src, dst| $src
-        | path basename
-        | let name
-        if $dst =~ $name { $dst } else { $dst | path join $name }
-        | str replace $nu.home-dir ~
-        | {
-            name: (match ($in | path type) {
-                file => (ansi steelblue1a)
-                _    => (ansi steelblue1b)(ansi bo)
-            } | append [$name (ansi rst)] | str join)
-            path: $'(ansi lime)($in)(ansi rst)'
-        }
-    } ...($in | values)
-}
-
-def copy-file []: [
-    record<src: glob, dst: string> -> record<name: string, path: string>
+def "copy file" []: [
+    record<src: glob, dst: string> -> nothing
 ] {|| let record | get src | let src | describe | let type
     $record | get dst | let dst
     try { if $type != glob { [$src] } else { $src
@@ -52,7 +79,7 @@ def copy-file []: [
             $str | path basename | glob $in
         } | where $it != null | par-each {|f|
             cp --update --recursive $f $dst
-            {src: $f dst: $dst} | prettify
+            {src: $f dst: $dst} | show copy
         }
     } catch {
         error make {
@@ -80,36 +107,58 @@ def "parse version" [format_str: string = "{_} {major}.{minor}.{patch}"]: [
     )
 }
 
+def "install lsp" [...servers: string]: [
+    nothing -> nothing
+    list<string> -> nothing
+] {|| default []
+    | append $servers
+    | iter {|lsp| match $in {
+            rust-analyzer                => { rustup component add rust-src }
+            pyright                      => { pixi global install --expose pyright --expose pyright-langserver pyright }
+            ruff                         => { pixi global install ruff }
+            marksman                     => { pixi global install marksman }
+            tombi                        => { pixi global install tombi }
+            typescript-language-server   => { bun --global install typescript typescript-language-server }
+            oxlint                       => { bun --global install oxlint }
+            prettier                     => { bun --global install prettier }
+            vscode-langservers-extracted => { bun --global install vscode-langservers-extracted }
+            yaml-language-server         => { bun --global install yaml-language-server }
+            bash-language-server         => { bun --global install bash-language-server }
+            nufmt                        => { cargo install --git https://github.com/nushell/nufmt }
+            nu-lint                      => { cargo install nu-lint }
+        }
+        try { {src: $lsp dst: (which $lsp | get 0.path)} | show copy }
+    }
+}
+
 # MARK: Subcommands
 
 # Install and configure oh-my-posh as the shell prompt handler.
 @category prompt
 def "main oh-my-posh" []: nothing -> nothing {
-    if (which oh-my-posh | get --optional 0.path) == null {
+    show step oh-my-posh+config
+    which oh-my-posh
+    | get --optional 0.path
+    | let omp: path
+    if $omp != null { show found (oh-my-posh --version) } else {
         try {
-            match $nu.os-info.family {
-                `windows` => {
+            match $nu.os-info {
+                {family: `windows`} => {
                     pwsh -nop -noni -c "winget install oh-my-posh --disable-interactivity"
                 }
-                `unix`    => {
-                    bash -c "sudo apt-get install oh-my-posh -y"
+                {family: `unix`}    => {
+                    sudo bash "apt-get install oh-my-posh -y"
                 }
             }
         } catch {
             error make "failed to install oh-my-posh using system package manager"
         }
-    } else {
-        print $'(ansi b)oh-my-posh (oh-my-posh --version)(ansi rst) is already installed'
     }
     let script: path = $nu.vendor-autoload-dirs | last | path join oh-my-posh.nu
     let custom: path = (resolve custom.omp.json)
     try {
         oh-my-posh init nu --config $custom --print | save --force $script
-        {src: `oh-my-posh.nu` dst: $script}
-        | prettify
-        | flatten
-        | table --theme thin --index false
-        | print
+        {src: `oh-my-posh.nu` dst: $script} | show copy
     } catch {
         error make {
             msg: "failed to setup oh-my-posh"
@@ -130,94 +179,41 @@ def "main helix" [
 ]: [
     nothing -> nothing
 ] {
-    let target: path = $nu.default-config-dir | path basename --replace helix
-    let version: string = try { hx --version } | default ''
-    let files: list<record<path: path, content: string>> = [[path content];
-    [
-        /etc/apt/sources.list.d/debian-unstable.list,
-        (
-            [
-                "deb http://deb.debian.org/debian unstable main"
-                "deb-src http://deb.debian.org/debian unstable main"
-            ] | str join "\n"
-        )
-    ]
-    [
-        /etc/apt/preferences,
-        (
-            [
-                "Package: *"
-                "Pin: release a=trixie"
-                "Pin-Priority: 500"
-                ""
-                "Package: hx"
-                "Pin: release a=unstable"
-                "Pin-Priority: 1000"
-                ""
-                "Package: *"
-                "Pin: release a=unstable"
-                "Pin-Priority: 100"
-                ""
-            ] | str join "\n"
-        )
-    ]
-]
-    let script = $'
-list="($files | first | get path)"
-if [ ! -f "$list" ]; then
-    echo "($files | first | get content)" | sudo tee $list
-    echo "wrote unstable list to $list"
-else
-    echo "found existing unstable list [path=$list]"
-fi
-preferences="($files | last | get path)"
-if [ ! -f "$preferences" ]; then
-    echo "($files | last | get content)"
-    echo "wrote preferences to $preferences"
-else
-    echo "found existing preferences [path=$preferences]"
-fi
-sudo apt-get update -y && sudo apt-get install hx -y
-'
-    if ($version) =~ '25.07' {
-        found $version
-    } else if ($files | get path | all { $in | path exists }) {
-        found ($files.path | str join ', ') --noun files
-    } else {
+    show step (if ($grammars) { 'helix+grammars' } else { 'helix' })
+
+    let current: string = try { hx --version } catch { '' }
+    if $current =~ '25.07' { show found $current } else { $HERE
+        | path join scripts debian-unstable.sh
+        | let script: path
         try {
-            bash -c $script
-            print $"(ansi g)installed (helix --version)(ansi rst)"
+            bash $script
+            sudo bash 'apt-get install hx -y'
+            log info $" (ansi g)installed (helix --version)(ansi rst)"
         } catch {
             error make {
                 msg: "failed to update helix from unstable repository"
                 labels: [
-                    {text: `version`, span: (metadata $version).span}
                     {text: `script`, span: (metadata $script).span}
                 ]
             }
         }
     }
 
-
+    let target: path = $nu.default-config-dir | path basename --replace helix
     try {
-        if not ($target | path exists) {
-            mkdir --verbose $target
-        } else if (ls $target | first | stale) {
-            {src: (resolve helix * --glob) dst: $target}
-            | copy-file
-            | table --theme thin --index false
-        } else {
-           $"(ansi y)helix configuration is already up to date(ansi rst)"
-        } | print
-     } catch {
-        error make "failed to write helix configuration files"
+        if not ($target | path exists) { mkdir --verbose $target }
+        ls --short-names $target
+        | where type == file and ($it | stale)
+    } catch {
+        error make "unable to list files in the helix config directory"
+    } | get name | iter {|n|
+        {src: (resolve helix $n) dst: ($target | path join $n)} | copy file
     }
 
-    if $grammars and (which hx | get path | first) != null {
-        try { hx --grammar fetch }
-        try { hx --grammar build }
-    }
-    return
+    if not $grammars or (which hx | get --optional 0.path) == null { return }
+
+    try { hx --grammar fetch | err>(null-device) }
+    try { hx --grammar build | err>(null-device) }
 }
 
 # Install and configure Zellij, along with completions if carapace is installed.
@@ -225,43 +221,42 @@ sudo apt-get update -y && sudo apt-get install hx -y
 def "main zellij" []: [
     nothing -> nothing
 ] {
-    let target: path = $nu.default-config-dir | path basename --replace zellij
-    if (which zellij | get --optional 0.path) == null {
+    show step zellij
+    if (which zellij | length) > 0 {
+        show found $'(zellij --version)'
+    } else {
         try {
-            cargo --list
-            | find binstall
-            | length
-            | if $in > 0 { cargo binstall zellij } else { cargo install --locked zellij }
+            let ls = cargo --list | find binstall
+            if ($ls | length) > 0 {
+                cargo binstall zellij
+            } else {
+                cargo install --locked zellij
+            }
         } catch {
             error make 'failed to install zellij'
         }
-    } else {
-        found (zellij --version)
     }
 
-    mut out = []
-
     try {
+        let target = ($nu.default-config-dir | path basename --replace zellij)
         if not ($target | path exists) { mkdir --verbose $target }
-       $out ++= [({src: (resolve zellij *.kdl --glob) dst: $target} | copy-file)]
+        {src: (resolve zellij *.kdl --glob) dst: $target} | copy file
     } catch {
         error make "failed to write zellij configuration files"
     }
 
-     if ($nu.os-info.name == linux) and (which carapace | get --optional 0.path) != null {
+     if ($nu.os-info.family == unix) and (which carapace | get --optional 0.path) != null {
         let fish_completions = '/usr/share/fish/vendor_completions.d/'
-        let tmp = mktemp --suffix .fish
         try {
-            mkdir $fish_completions
-            zellij setup --generate-completion fish | save --raw --force $tmp
-            bash -c $"sudo mv ($tmp) ($fish_completions | path join zellij.fish)"
-            $out ++= [({src: `zellij.fish` dst: $fish_completions} | prettify)]
+            mkdir --verbose $fish_completions
+            let tmp = mktemp --suffix .fish
+            zellij setup --generate-completion fish | save --force $tmp
+            sudo mv $tmp ($fish_completions | path join zellij.fish)
+            {src: `zellij.fish` dst: $fish_completions} | show copy
         } catch {
-            error make "failed to setup zellij completions (bridge=fish)"
+            error make "failed to setup zellij completions"
         }
     }
-
-    $out | flatten | table --theme thin --index false | print
 }
 
 # Install carapace-bin for externally sourced shell completions
@@ -269,121 +264,68 @@ def "main zellij" []: [
 def "main carapace" []: [
     nothing -> nothing
 ] {
-    let text: string = 'deb [trusted=yes] https://apt.fury.io/rsteube/ /'
-    let path: string = '/etc/apt/sources.list.d/fury.list'
-
-    if (which carapace | get --optional 0.path) != null {
-        found (carapace --version | parse '{version} ({_}) [{_}]' | get version | first)
-    } else if ($path | path exists) {
-        found $path --noun list
+    show step carapace
+    if (which carapace | length) > 0 {
+        show found $"(
+            carapace --version
+            | parse '{version} ({_}) [{_}]'
+            | get --optional 0.version
+        )"
     } else {
-        try {
-            bash -c $'echo "($text)" | sudo tee "($path)"'
-        } catch {
-            error make $"failed to write list [path=($path)]"
-        }
+        let script: path = $HERE | path join scripts carapace-fury.sh
+        try { bash $script }
     }
-
-    try {
-        bash -c 'sudo apt-get update -y && sudo apt-get install carapace-bin -y'
-    } catch {
-        error make "failed to install carapace-bin"
-    }
-    return
 }
 
 # Inventory and (optionally) install language servers consumed by the Helix language configuration.
 @category editor
 def "main servers" [
     --install (-i) # automatically install missing language servers
-]: [
-    nothing -> nothing
-] {
-    let candidates = [[name, role, language];
-        [rust-analyzer,                 lsp,        rust]
-        [pyright-langserver,            lsp,        python]
-        [pyright,                       lsp-alt,    python]
-        [ruff,                          lsp+fmt,    python]
-        [typescript-language-server,    lsp,        js/ts]
-        [oxlint,                        lsp,        js/ts]
-        [prettier,                      formatter,  js/ts/html/css/json]
-        [vscode-css-language-server,    lsp,        css]
-        [vscode-html-language-server,   lsp,        html]
-        [vscode-json-language-server,   lsp,        json]
-        [yaml-language-server,          lsp,        yaml]
-        [marksman,                      lsp,        markdown]
-        [bash-language-server,          lsp,        bash]
-        [tombi,                         lsp+fmt,    toml]
-        [nufmt,                         formatter,  nu]
-        [nu-lint,                       lsp,        nu]
-    ]
-    let installers = [[binary, closure];
-        [rust-analyzer,                 { rustup component add rust-src }]
-        [pyright,                       { pixi global install --expose pyright --expose pyright-langserver pyright }]
-        [pyright-langserver,            null]
-        [ruff,                          { pixi global install ruff }]
-        [typescript-language-server,    { bun --global install typescript-language-server }]
-        [oxlint,                        { bun --global install oxlint }]
-        [prettier,                      { bun --global install prettier }]
-        [vscode-css-language-server,    { bun --global install vscode-langservers-extracted }]
-        [vscode-html-language-server,   null]
-        [vscode-json-language-server,   null]
-        [yaml-language-server,          { bun --global install yaml-language-server }]
-        [marksman,                      { pixi global install marksman }]
-        [bash-language-server,          { bun --global install bash-language-server }]
-        [tombi,                         { pixi global install tombi }]
-        [nufmt,                         { cargo install --git https://github.com/nushell/nufmt }]
-        [nu-lint,                       { cargo install nu-lint }]
-    ]
+]: nothing -> nothing {
+    if $install { show step language-servers }
+    with-env {
+        PATH: $env.path
+        RUSTUP_HOME: ($env.RUSTUP_HOME? | default ($nu.home-dir | path join .rustup))
+    } {
+        rustup show active-toolchain
+        | split words
+        | first
+        | let toolchain: string
 
-    # --- search roots ---
-    let roots = [
-        (
-            $env.RUSTUP_HOME?
-            | default ($nu.home-dir | path join .rustup)
-            | path join toolchains (rustup show active-toolchain | split words | first) bin
-        )
-        ...([.local .pixi .bun .cargo] | par-each {|el| $nu.home-dir | path join $el bin })
-        ...($env.PATH | split row (char esep))
-    ] | where ($it != null and ($it | path exists)) | uniq
+        path add ($env.RUSTUP_HOME | path join toolchains $toolchain bin)
+        $env.path = ($env.path | split row (char esep) | uniq | where ($it | path exists))
 
-    # --- resolve each candidate ---
-    $candidates
-    | sort-by language
-    | par-each --keep-order {|c|
-        let resolved: path = $roots | par-each { $in
-            | path join $c.name
-            | if ($in | path exists) { $in } else { which $c.name | get --optional 0.path }
-        } | compact | first
-        {
-            name: $c.name
-            path: ($resolved | default "not found")
-            found: ($resolved != null)
+        # --- resolve each candidate ---
+        $LANGUAGE_SERVERS
+        | sort --natural
+        | iter --keep-order {|name| which $name
+            | get --optional 0.path
+            | let path: path
+            if $name =~ vscode-.+ {
+                (bun list --global | find $name | length) > 0
+            } else {
+                $path != null
+            } | let found: bool
+            {name: $name found: $found}
         }
-    } | if not $install { $in } else { $in
-        | let index
-        | where not ($it.found? | default false)
-        | let missing
-        | length
-        | if $in == 0 {
-            $index | get name | par-each { found $in --noun server } | first
-        } else { $missing
-            | get binary
-            | par-each {|b| ($installers | where binary == $b).0? }
-            | where closure != null
-            | par-each {|e| get binary | let name
-                try { do $e.closure } catch { error make $"failed to install ($name)" }
-                {name: $name path: (which $e.binary | get --optional 0.path)}
-            }
+    } | let data: table<name: string found: bool>
+    if $install { $data
+        | where not found
+        | get name
+        | if ($in | length) > 0 { $in | install lsp } else {
+            log info $" (ansi g)all servers are installed(ansi rst)"
         }
-    } | table --theme thin --index false | print
+    } else { $data
+        | table --index false
+        | print
+    }
 }
 
 # Show information about the Nushell environment.
 @category meta
 def "main info" [
     --servers (-s) # evaluate and display the LSP inventory
-    --full (-f) # display all supported prettifyation types
+    --full (-f) # display all supported show copyation types
 ]: [
     nothing -> nothing
 ] {
@@ -411,38 +353,67 @@ def "main info" [
                     }
                 )
             }
-        } | table --theme thin --index false --expand | print
+        } | table --index false --expand | print
     }
+}
+
+# Save or update a file in the repository from this machine's copy.
+#
+@category meta
+def "main save" [
+    source: path # Path to a file to save or update in the repository.
+    --dirname(-d): path # The directory name to organize the file under in the repository.
+]: nothing -> nothing {
+    if ($source | path type) != file { error make "source must be a file" }
+    let destination: path = if $dirname == null { $source
+        | path parse
+        | match $in {
+            {stem: 'config' extension: 'nu'} => { $HERE }
+            {parent: ($LIB) extension: 'nu'} => { $HERE | path join lib }
+            {parent: $parent}                => { $parent | path dirname --replace $HERE }
+        }
+    } else { $HERE
+        | path join $dirname
+        | let target: path
+        | path exists
+        | if not $in { try { mkdir --verbose $target } catch { error make } }
+        $target
+    }
+    {src: $source dst: $destination} | copy file
 }
 
 # MARK: Main
 
 # Install the repository's Nushell configuration and module library.
 #
-def main [
-    --all (-a) # Run the full setup suite (caution: opinionated)
-    --info (-i) # Show the installed applications and language servers.
+def "main base" [
+    --config(-c) # Install the Nushell configuration on this host
+    --autoload(-l) # Install the autoloaded files (defs/aliases) on this host
+    --modules(-m) # Install the Nushell modules on this host
 ]: nothing -> nothing  {
+    [[str flag]; [`config` $config] [`autoload` $autoload] [`modules` $modules]]
+    | where flag
+    | get str
+    | let base: list<string>
+    show step ($base | str join +)
+    if not $config { [] } else {
+        [{src: (resolve config.nu) dst: $nu.config-path}]
+    } | if not $autoload { $in } else {
+        $in | append {src: (resolve auto *.nu --glob) dst: $AUTO}
+    } | if not $modules { $in } else {
+        $in | append {src: (resolve lib *.nu --glob)  dst: $LIB}
+    } | iter --keep-order { copy file }
+}
 
-    if $all { step config+modules }
-
-    [[src dst];
-        [(resolve config.nu)        ($nu.config-path)]
-        [(resolve lib *.nu --glob)  ($nu.data-dir | path join modules)]
-    ] | par-each --keep-order { $in | copy-file } | flatten | table --theme thin --index false | print
-
-    if $all {
-        step carapace
-        main carapace
-        step helix+grammars
-        main helix --grammars
-        step oh-my-posh+config
-        main oh-my-posh
-        step language-servers
-        main servers --install
-        step zellij
-        main zellij
-    } else if $info {
-        main info --full
-    }
+# Run the full setup suite (caution: opinionated)
+#
+def main []: nothing -> nothing {
+    for c in [
+        { main base --config --autoload  --modules }
+        { main servers --install }
+        { main helix --grammars }
+        { main carapace }
+        { main zellij }
+        { main oh-my-posh }
+    ] { do --ignore-errors $c }
 }

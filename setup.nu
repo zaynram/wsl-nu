@@ -240,6 +240,14 @@ def "dyn install" [package: string --winget-id(-i): string]: nothing -> nothing 
     }
 }
 
+def "pkg installed" [name: string]: nothing -> bool {
+    (command $name) or ([
+        { try { bun --global list } }
+        { try { pixi global list } }
+        { try { cargo --list } }
+    ] | any { (do $in | to text) =~ $name })
+}
+
 # MARK: Subcommands
 
 # Install and configure oh-my-posh as the shell prompt handler.
@@ -400,19 +408,13 @@ def "main languages" [
             path add ($env.RUSTUP_HOME | path join toolchains $toolchain bin)
         }
         $env.path = ($env.path | split row (char esep) | uniq | where ($it | path exists))
+
         # --- resolve each candidate ---
         $LANGUAGE_PACKAGES
         | sort --natural
-        | iter --keep-order {|name| which $name
-            | get --optional 0.path
-            | let path: path
-            if $name =~ vscode-.+ {
-                (bun list --global | find $name | length) > 0
-            } else {
-                $path != null
-            } | let found: bool
-            {name: $name found: $found}
-        } | let data: table<name: string found: bool>
+        | iter --keep-order { {name: $in found: (pkg installed $in)} }
+        | let data: table<name: string found: bool>
+
         if not $install { $data | table --index false | print } else { $data
             | where not found
             | get name
@@ -424,7 +426,7 @@ def "main languages" [
                 $missing | setup languages
             }
         }
-    }
+    }; ignore
 }
 
 # Show information about the Nushell environment.

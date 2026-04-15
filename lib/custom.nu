@@ -51,20 +51,29 @@ export module info {
     export alias la = ls --all --full-paths
     export alias ll = ls --full-paths
     export alias ld = ls --directory
+    # Check if a file is older than a set duration.
     export def stale [
-        path?: path # path of the file to check
-        --max-age (-m): duration = 1day # maximum age of a file before it becomes stale
+        path?: path # Path of the file to check
+        --max-age (-m): duration = 1day # Time since last modification to consider stale
     ]: [
-        nothing -> bool
-        path -> bool
-        record<name: string, type: string, size: filesize, modified: datetime> -> bool
-        list<record<name: string, type: string, size: filesize, modified: datetime>> -> list<bool>
-    ] {|| default (try { ls $path | get 0 })
-        | each { match ($in | describe) {
-                `string` => (if ($in | path exists) { try { ls $in | first } })
-                _        => $in
-            } | $in == null or ((date now) - $in.modified > $max_age)
-        }
+        oneof<
+            nothing
+            path
+            record<name: string, type: string, size: filesize, modified: datetime>
+        > -> bool
+        table<name: string, type: string, size: filesize, modified: datetime> -> list<bool>
+    ] {|x: oneof<nothing path record table>| describe | let type: string
+        match $type {
+            `nothing`   => {
+                if $path != null {
+                    try { ls $path } | default []
+                } else {
+                    error make "a path or record must be provided"
+                }
+            }
+            `string`    => (try { ls $x } | default [])
+            _           => (if $type =~ record { [$x] } else { $x })
+        } | par-each --keep-order {|r| $r == null or ((date now) - $r.modified) > $max_age }
     }
 }
 

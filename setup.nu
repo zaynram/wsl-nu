@@ -13,7 +13,7 @@ const BIN = $HERE | path join scripts
 
 #MARK: Data
 
-const LANGUAGE_SERVERS: list<string> = [
+const LANGUAGE_PACKAGES: list<string> = [
     rust-analyzer
     pyright
     ruff
@@ -27,6 +27,19 @@ const LANGUAGE_SERVERS: list<string> = [
     tombi
     nufmt
     nu-lint
+    jq-lsp
+    fish-lsp
+    svelteserver
+    rumdl
+    ty
+    pylsp
+    markdown-oxide
+    jedi-language-server
+    kdlfmt
+    texlab
+    just-lsp
+    bibtex-tidy
+    yamlfmt
 ]
 
 let pm_info: record<name: string sudo: bool args: list<string>> = match $nu.os-info {
@@ -36,11 +49,11 @@ let pm_info: record<name: string sudo: bool args: list<string>> = match $nu.os-i
 
 #MARK: Logging
 
-def "show step" [name: string]: nothing -> nothing {
-    log info $"setting up: (ansi c)($name)(ansi rst)"
+def "show step" [name: string --verb(-v): string = processing]: nothing -> nothing {
+    log info $"($verb): (ansi c)($name)(ansi rst)"
 }
 
-def "show found" [desc: string --noun (-n): string = install]: nothing -> nothing {
+def "show found" [desc: string --noun (-n): string = version]: nothing -> nothing {
     log info $"found existing ($noun): (ansi b)($desc)(ansi rst)"
 }
 
@@ -66,9 +79,18 @@ def command [name: string]: nothing -> bool {
     (which $name | compact | length) > 0
 }
 
+def --wrapped "pixi global" [...rest: string]: nothing -> nothing {
+    if (command pixi) {
+        ^pixi global ...$rest
+    } else if (command uv) {
+        uv tool ($rest | first) ($rest | last)
+    } else {
+        error make "no global tool installer detected"
+    }
+}
+
 def resolve [...segments: string --glob (-g)]: [
-    nothing -> path
-    nothing -> glob
+    nothing -> oneof<path glob>
 ] {|| prepend $HERE
     | append $segments
     | path join
@@ -76,111 +98,134 @@ def resolve [...segments: string --glob (-g)]: [
 }
 
 def "copy file" []: [
-    record<src: glob, dst: string> -> nothing
-] {|| let record | get src | let src | describe | let type
-    $record | get dst | let dst
-    try { if $type != glob { [$src] } else { $src
-            | into string
-            | let str
-            | path dirname
-            | cd $in
-            $str | path basename | glob $in
-        } | where $it != null | par-each {|f|
-            cp --update --recursive $f $dst
-            {src: $f dst: $dst} | show copy
+    record<src: oneof<glob path>, dst: path> -> nothing
+] {|| let r: record<src: oneof<glob path> dst: path>
+    try {
+        match ($r.src | describe) {
+            glob => { $r.src
+                | into string
+                | let s: string
+                | path dirname
+                | cd $in
+                $s | path basename | glob $in
+            }
+            _    => [$r.src]
+        } | compact | iter {
+            cp --update --recursive $in $r.dst
+            {src: $in dst: $r.dst} | show copy
         }
     } catch {
         error make {
             msg: "failed to copy file(s)"
             labels: [
-                {text: `source` span: (metadata $src).span}
-                {text: `output` span: (metadata $dst).span}
+                {text: `source`      span: (metadata $r.src).span}
+                {text: `destination` span: (metadata $r.dst).span}
             ]
         }
-    } | ignore
-}
-
-def "parse version" [format_str: string = "{_} {major}.{minor}.{patch}"]: [
-    string -> record<major: int minor: int patch: int pre: string build: string>
-] {|| parse $format_str
-    | first
-    | items {|k v| {($k): (if ($k in [pre build]) { $v } else { $v | into int })} }
-    | into record
-    | let parts
-    | merge (
-        [pre build]
-        | where ($parts | get --optional $it) == null
-        | par-each { {($in): ''} }
-        | into record
-    )
-}
-
-def "run bash" [...cmdline: string --script(-s): oneof<path glob>]: nothing -> nothing {
-    if not (command bash) { return }
-    let run = {|cmd: string|
-        let args = if $script == null { [-c $cmd] } else { [$cmd] }
-        if $pm_info.sudo { 
-            ^sudo bash ...$args
-        } else { 
-            ^bash ...$args
-        }
     }
-    try {
-        cd $BIN
-        if $script != null {
-            ls --short-names $script | get name | first
-        } else {
-            $cmdline | str join ' '
-        } | let cmd: string
-        do $run $cmd | complete
-    } | let output: record<stdout: string stderr: string exit_code: int>
-    if $env.LAST_EXIT_CODE != 0 and $output.stderr != "" {
-        log error $output.stderr
-    } else if $output.stdout != "" {
-        log info $output.stdout
-    } | ignore
+    ignore
 }
 
-def "install lsp" [...servers: string]: [
-    nothing -> nothing
-    list<string> -> nothing
+def "dyn output" [descriptor: string = "operation" target?: string]: [
+    record<stdout:string stderr: string exit_code: int> -> nothing
+] {|| let output: record<stdout:string stderr: string exit_code: int>
+    if $target == null { '' } else { $"($target)/" }
+    | let prefix: string
+    show step (ansi c)($prefix)($descriptor)(ansi rst) --verb "awaiting completion"
+    match $output {
+        {exit_code: 0}           => { log info (ansi g)ok(ansi rst) }
+        {stderr: $e} if $e != "" => { log error $e }
+        {exit_code: $c}          => { log error ("exited with code:")($c) }
+    }; ignore
+}
+
+def "run bash" [...cmdline: string --no-elevate(-n) --script(-s): oneof<path glob>]: nothing -> nothing {
+    if not (command bash) { error make "could not detect bash executable" }
+    match $script {
+        null => { $cmdline | str join ' ' }
+        _    => { try { cd $BIN; ls --short-names $script | get --optional 0.name } }
+    } | if $in == null { return } else if $script == null { [-c $in] } else { [$in] }
+    | let args: list<string>
+    try {
+        if not $no_elevate and (command sudo) { ^sudo bash ...$args } else { ^bash ...$args }
+        | complete | dyn output
+    }
+}
+
+def "setup languages" [...packages: string]: [ # nu-lint-ignore: max_function_body_length
+    oneof<nothing list<string>> -> nothing
 ] {|| default []
-    | append $servers
-    | iter {|lsp| try {
-            match $lsp {
+    | append $packages
+    | iter {|pkg| try {
+            log info $"installing package: (ansi b)($pkg)(ansi rst)"
+            match $pkg {
+                jq-lsp                       => { brew install jq-lsp }
                 rust-analyzer                => { rustup component add rust-src }
                 pyright                      => { pixi global install --expose pyright --expose pyright-langserver pyright }
                 ruff                         => { pixi global install ruff }
                 marksman                     => { pixi global install marksman }
                 tombi                        => { pixi global install tombi }
+                ty                           => { pixi global install ty }
+                jedi-language-server         => { pixi global install jedi-language-server }
+                pylsp                        => { pixi global install --expose pylsp python-lsp-server }
+                yamlfmt                      => { pixi global install yamlfmt }
                 typescript-language-server   => { bun --global install typescript typescript-language-server }
                 oxlint                       => { bun --global install oxlint }
                 prettier                     => { bun --global install prettier }
                 vscode-langservers-extracted => { bun --global install vscode-langservers-extracted }
                 yaml-language-server         => { bun --global install yaml-language-server }
                 bash-language-server         => { bun --global install bash-language-server }
+                svelteserver                 => { bun --global install svelte-language-server }
+                fish-lsp                     => { bun --global install fish-lsp }
+                kdlfmt                       => { bun --global install kdlfmt }
+                bibtex-tidy                  => { bun --global install bibtex-tidy }
                 nufmt                        => { cargo install --git https://github.com/nushell/nufmt }
                 nu-lint                      => { cargo install nu-lint }
-            }
-            {src: $lsp dst: (which $lsp | get 0.path)} | show copy
+                rumdl                        => { cargo install rumdl }
+                just-lsp                     => { cargo install just-lsp }
+                texlab                       => { cargo install --git https://github.com/latex-lsp/texlab }
+                lldb-dap                     => { dyn install lldb --winget-id LLVM.LLVM }
+                markdown-oxide               => {
+                    if (command cargo-binstall) {
+                        cargo binstall --git https://github.com/feel-ix-343/markdown-oxide markdown-oxide
+                    } else if (command cargo) {
+                        cargo install --locked --git https://github.com/Feel-ix-343/markdown-oxide.git markdown-oxide
+                    } else if (command winget) {
+                        winget install FelixZeller.markdown-oxide --disable-interactivity
+                    } else if (command brew) {
+                        brew install markdown-oxide
+                    }
+                }
+            } | complete | dyn output install $pkg
         } catch {
-            log error $'failed to install language server: ($lsp)'
+            log error $'package install failed: ($pkg)'
         }
-    } | ignore
+    }
 }
 
 def "dyn install" [package: string --winget-id(-i): string]: nothing -> nothing {
-    if $pm_info.name =~ winget and $winget_id != null {
-        $winget_id
+    let retarget_win: bool = $pm_info.name =~ winget and $winget_id != null
+    let target: string = if $retarget_win { $winget_id } else { $package }
+    let parts: record<command: string args: list<string>> = if $pm_info.sudo {
+        {command: `sudo`, args: [$pm_info.name install $target]}
     } else {
-        $package
-    } | let target: string
+        {command: $pm_info.name args: [install $target]}
+    }
     try {
-        if $pm_info.sudo {
-            sudo $pm_info.name install $target ...$pm_info.args
+        ^$parts.command ...$parts.args
+        | complete
+        | if $in.exit_code > 0 {
+            error make {
+                msg: $in.stderr
+                code: $in.exit_code
+                labels: [
+                    {text: `command`    span: (metadata $parts.command).span}
+                    {text: `arguments`  span: (metadata $parts.args).span}
+                ]
+            }
         } else {
-            ^$pm_info.name install $target ...$pm_info.args
-        } | print
+            $in | dyn output install $target
+        }
     } catch {|err|
         error make {
             msg: "package installation failed"
@@ -192,7 +237,7 @@ def "dyn install" [package: string --winget-id(-i): string]: nothing -> nothing 
             ]
             inner: [$err]
         }
-    } | ignore
+    }
 }
 
 # MARK: Subcommands
@@ -200,27 +245,31 @@ def "dyn install" [package: string --winget-id(-i): string]: nothing -> nothing 
 # Install and configure oh-my-posh as the shell prompt handler.
 @category prompt
 def "main oh-my-posh" []: nothing -> nothing {
-    show step oh-my-posh+config
-
+    show step oh-my-posh/install
     if (which oh-my-posh | length) > 0 {
         show found $'oh-my-posh (oh-my-posh --version)'
     } else {
         dyn install oh-my-posh
     }
-    let script: path = $nu.vendor-autoload-dirs | last | path join oh-my-posh.nu
-    let custom: path = (resolve custom.omp.json)
+
+    show step oh-my-posh/config
+    $nu.vendor-autoload-dirs
+    | last
+    | path join oh-my-posh.nu
+    | let script: path
+
     try {
-        oh-my-posh init nu --config $custom --print | save --force $script
+        oh-my-posh init nu --config (resolve custom.omp.json) --print
+        | save --force $script
         {src: `oh-my-posh.nu` dst: $script} | show copy
     } catch {
         error make {
             msg: "failed to setup oh-my-posh"
             labels: [
-                {text: `source` span: (metadata $custom).span}
                 {text: `output` span: (metadata $script).span}
             ]
         }
-    } | ignore
+    }
 }
 
 # Install and configure Helix as a modal editor. Tree-sitter grammars can be fetched and built with the --grammar flag.
@@ -230,107 +279,115 @@ def "main oh-my-posh" []: nothing -> nothing {
 def "main helix" [
     --grammars (-g) # fetch and build language grammar trees
 ]: nothing -> nothing {
-    show step (if ($grammars) { 'helix+grammars' } else { 'helix' })
-    
-    let current: string = try { hx --version } catch { '' }
-    let target: path = $nu.default-config-dir | path basename --replace helix
-    
-    if $current =~ '25.07' {
-        show found $current
+    show step helix/install
+
+    if (command hx) {
+        show found (hx --version)
     } else {
-        if $pm_info.name =~ apt {
-            run bash --script debian-unstable.sh
-        }
+        if $pm_info.name =~ apt { run bash --script debian-unstable.sh }
         dyn install hx --winget-id Helix.Helix
     }
-    
-    match $nu.os-info.family {
-        windows => 'alternate'
-        unix    => 'helix'
-    } | let dirname: string
-    
+
+    show step helix/config
+
+    $nu.default-config-dir
+    | path basename --replace helix
+    | let target: path
+
     try {
         if not ($target | path exists) { mkdir --verbose $target }
         ls --short-names $target | where type == file
     } catch {
         error make "unable to list files in the helix config directory"
     } | get name | iter {|n|
-        if $n =~ 'config.toml' {
-            {src: (resolve $dirname $n --glob) dst: $target}
-        } else {
-            {src: (resolve helix $n) dst: ($target | path join $n)}
+        let use_alt: bool = $n =~ `config` and $nu.os-info.family == windows
+        {
+            src: (if $use_alt { resolve alternate $n } else { resolve helix $n })
+            dst: ($target | path join $n)
         } | copy file
     }
-    
-    if $grammars and (which hx | length) > 0 {
-        try { hx --grammar fetch | complete }
-        try { hx --grammar build | complete }
-    } | ignore
+
+    show step helix/grammars
+
+    if $grammars and (command hx) {
+        try { hx --grammar fetch | complete | dyn output fetch grammars }
+        try { hx --grammar build | complete | dyn output build grammars }
+    }
 }
 
 # Install and configure Zellij, along with completions if carapace is installed.
 @category multiplexer
-def "main zellij" []: nothing -> nothing {
-    show step zellij
-    if (which zellij | length) > 0 {
-        zellij --version | show found $in
-    } else if (command cargo) {
-        try {
-            if (command cargo-binstall) {
-                cargo binstall zellij
-            } else {
-                cargo install --locked zellij
-            }
-        } catch {
-            error make 'failed to install zellij (cargo)'
-        }
-    } else {
+def "main zellij" []: nothing -> nothing { # nu-lint-ignore: max_function_body_length
+    show step zellij/install
+    if (command zellij) {
+        show found (zellij --version)
+    } else if not (command cargo) {
         dyn install zellij
+    } else {
+        let args: list<string> = if (command cargo-binstall) { [binstall] } else { [install --locked] }
+        try { cargo ...$args zellij } catch { error make 'failed to install zellij (cargo)' }
     }
+
+    show step zellij/config
     try {
-        let target = ($nu.default-config-dir | path basename --replace zellij)
+        $nu.default-config-dir
+        | path basename --replace zellij
+        | let target: path
         if not ($target | path exists) { mkdir --verbose $target }
         {src: (resolve zellij *.kdl --glob) dst: $target} | copy file
     } catch {
         error make "failed to write zellij configuration files"
     }
-    if $nu.os-info.family == unix and (command carapace) {
-        let fish_completions = '/usr/share/fish/vendor_completions.d/'
-        try {
-            mkdir --verbose $fish_completions
-            let tmp = mktemp --suffix .fish
-            $"(zellij setup --generate-completion fish)" | save --raw --force $tmp
-            run bash mv $"($tmp)" $"($fish_completions | path join zellij.fish)"
-            {src: `zellij.fish` dst: $fish_completions} | show copy
-        } catch {
-            error make "failed to setup zellij completions"
+
+    if (command carapace) {
+        show step zellij/completions
+
+        [usr share fish completions]
+        | path join
+        | let fish_completions: path
+        | path join zellij.fish
+        | let destination: path
+
+        if ($destination | path type) == file {
+            show found $destination --noun completions
+        } else {
+            try {
+                mktemp --suffix .fish | let tmp: path
+                if ($fish_completions | path type) != dir { mkdir $fish_completions }
+                $"(zellij setup --generate-completion fish)\n" | save --raw --force $tmp
+                run bash mv $tmp $destination
+                {src: `zellij.fish` dst: $fish_completions} | show copy
+                rm $tmp --force
+            } catch {
+                error make "failed to setup zellij completions"
+            }
         }
-    } | ignore
+    }
 }
 
 # Install carapace-bin for externally sourced shell completions
 @category completion
 def "main carapace" []: nothing -> nothing {
-    show step carapace
-    if (which carapace | length) > 0 {
+    show step carapace/install
+    if (command carapace) {
         show found $"(
             carapace --version
             | parse '{version} ({_}) [{_}]'
             | get --optional 0.version
         )"
-    } else if $nu.os-info.family == unix {
+    } else if ($nu.os-info.family == unix) {
         run bash --script carapace-fury.sh
     } else {
         log warning "skipping carapace setup; os is not unix"
-    } | ignore
+    }
 }
 
-# Inventory and (optionally) install language servers consumed by the Helix language configuration.
+# Inventory and (optionally) install language packages consumed by the Helix configuration.
 @category editor
-def "main servers" [
-    --install (-i) # automatically install missing language servers
+def "main languages" [
+    --install (-i) # automatically install missing language servers, debuggers, and formatters
 ]: nothing -> nothing {
-    if $install { show step language-servers }
+    show step languages/inventory
     with-env {
         PATH: $env.path
         RUSTUP_HOME: ($env.RUSTUP_HOME? | default ($nu.home-dir | path join .rustup))
@@ -344,7 +401,7 @@ def "main servers" [
         }
         $env.path = ($env.path | split row (char esep) | uniq | where ($it | path exists))
         # --- resolve each candidate ---
-        $LANGUAGE_SERVERS
+        $LANGUAGE_PACKAGES
         | sort --natural
         | iter --keep-order {|name| which $name
             | get --optional 0.path
@@ -356,53 +413,44 @@ def "main servers" [
             } | let found: bool
             {name: $name found: $found}
         } | let data: table<name: string found: bool>
-        if $install { $data
+        if not $install { $data | table --index false | print } else { $data
             | where not found
             | get name
-            | if ($in | length) > 0 { $in | install lsp } else {
-                log info $"(ansi g)all servers are installed(ansi rst)"
+            | let missing: list<string>
+            if ($missing | length) == 0 {
+                log info $"(ansi g)all language packages are installed(ansi rst)"
+            } else {
+                show step language-servers/install
+                $missing | setup languages
             }
-        } else { $data
-            | table --index false
-            | print
         }
-    } | ignore
+    }
 }
 
 # Show information about the Nushell environment.
 @category meta
 def "main info" [
-    --servers (-s) # evaluate and display the LSP inventory
+    --languages (-l) # evaluate and display the LSP inventory
     --full (-f) # display all supported show copyation types
 ]: [
     nothing -> nothing
 ] {
-    if $servers or $full { main servers }
-    if $full or not $servers {
-        [[name command format];
-            [carapace   carapace    "{_} {major}.{minor}.{patch}-{pre}-{build} ({_}) [{_}]"]
-            [oh-my-posh oh-my-posh  "{major}.{minor}.{patch}"]
-            [helix      hx          "{_} {major}.{minor}.{patch}"]
-            [zellij     zellij      "{_} {major}.{minor}.{patch}"]
-        ] | par-each {|row|
-            let path = which $row.command | get --optional 0.path
-            {
+    if $languages or $full { main languages }
+
+    if $full or not $languages {
+        show step external-packages/inventory
+        [[name command];
+            [carapace   carapace ]
+            [oh-my-posh oh-my-posh]
+            [helix      hx]
+            [zellij     zellij]
+        ] | par-each {|row| {
                 name: $row.name
-                path: $path
-                version: (
-                    if $path != null {
-                        let version = ^$path --version | parse version $row.format
-                        [
-                            ($version | get major minor patch | str join .)
-                            ...($version | get pre build | where ($it | str length) > 0)
-                        ] | str join -
-                    } else {
-                        "not installed"
-                    }
-                )
+                path: (which $row.command | get --optional 0.path)
+                installed: (command $row.command)
             }
         } | table --index false --expand | print
-    } | ignore
+    }; ignore
 }
 
 # Save or update a file in the repository from this machine's copy.
@@ -413,7 +461,8 @@ def "main save" [
     --dirname(-d): path # The directory name to organize the file under in the repository.
 ]: nothing -> nothing {
     if ($source | path type) != file { error make "source must be a file" }
-    let destination: path = if $dirname == null { $source
+
+    if $dirname == null { $source
         | path parse
         | match $in {
             {stem: 'config' extension: 'nu'} => { $HERE }
@@ -426,41 +475,37 @@ def "main save" [
         | path exists
         | if not $in { try { mkdir --verbose $target } catch { error make } }
         $target
-    }
-    {src: $source dst: $destination}
-    | copy file
-    | ignore
+    } | let destination: path
+
+    {src: $source dst: $destination} | copy file | ignore
 }
 
 # MARK: Main
 
 # Install the repository's Nushell configuration and module library.
+# Supports running all subcommands with defaults as well.
 #
-def "main base" [
+def main [
     --config(-c) # Install the Nushell configuration on this host
     --autoload(-l) # Install the autoloaded files (defs/aliases) on this host
     --modules(-m) # Install the Nushell modules on this host
-]: nothing -> nothing  {
+    --all(-a) # Run all setup functions, not just the base set. Enables all other flags.
+]: nothing -> nothing {
     [[str flag]; [`config` $config] [`autoload` $autoload] [`modules` $modules]]
-    | where flag
+    | where flag or $all
     | get str
-    | let base: list<string>
-    show step ($base | str join +)
-    if not $config { [] } else {
+    | let desc: list<string>
+    if ($desc | length) > 0 { $desc | str join + } else { main info }
+    if not $config or $all { [] } else {
         [{src: (resolve config.nu) dst: $nu.config-path}]
-    } | if not $autoload { $in } else {
+    } | if not $autoload or $all { $in } else {
         $in | append {src: (resolve auto *.nu --glob) dst: (try { mkdir $AUTO }; $AUTO)}
-    } | if not $modules { $in } else {
+    } | if not $modules or $all { $in } else {
         $in | append {src: (resolve lib *.nu --glob)  dst: (try { mkdir $LIB }; $LIB)}
-    } | iter --keep-order { copy file } | ignore
-}
+    } | iter --keep-order { copy file }
 
-# Run the full setup suite (caution: opinionated)
-#
-def main [--all(-a)]: nothing -> nothing {
-    main base --config --autoload --modules
     if $all {
-        main servers --install
+        main languages --install
         main helix --grammars
         main zellij
         main carapace

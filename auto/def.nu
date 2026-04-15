@@ -20,9 +20,9 @@ def "config def" []: nothing -> nothing { ^$env.config.buffer_editor ($HERE | pa
 # To view more specific help information, you can pass --help as a string with the subcommand(s).
 @category configuration
 def --wrapped "setup nu" [
-    ...rest: string # Arguments to pass through to function. Subcommands: [save|info|carapace|helix|oh-my-posh|servers|zellij]
-    --pick(-p): list<string> # Selection of subcommands to run. Choices: [carapace|helix|oh-my-posh|servers|zellij]
-    --omit(-o): list<string> # Selection of subcommands to skip. Choices: [carapace|helix|oh-my-posh|servers|zellij]
+    ...rest: string # Arguments to pass through to function. Subcommands: [save|info|carapace|helix|oh-my-posh|languages|zellij]
+    --pick(-p): list<string> # Selection of subcommands to run. Choices: [carapace|helix|oh-my-posh|languages|zellij]
+    --omit(-o): list<string> # Selection of subcommands to skip. Choices: [carapace|helix|oh-my-posh|languages|zellij]
 ]: nothing -> nothing {
     [
         carapace

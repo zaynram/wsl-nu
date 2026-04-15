@@ -1,13 +1,14 @@
-explicit_optional_access   = false
-max_pipeline_length        = 80
-pipeline_placement         = "start"
-sequential                 = false
+sequential = false
+pipeline_placement = "start"
+max_pipeline_length = 80
 skip_external_parse_errors = true
+explicit_optional_access = false
 
 [groups]
 
 [rules]
+check_complete_exit_code = "off"
 check_typed_flag_before_use = "off"
-missing_in_type             = "off"
-missing_out_type            = "off"
-reflow_wide_lists           = "off"
+reflow_wide_lists = "off"
+missing_in_type = "off"
+missing_out_type = "off"

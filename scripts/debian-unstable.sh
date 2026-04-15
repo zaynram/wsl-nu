@@ -2,7 +2,7 @@
 
 function write-list {
     local path="/etc/apt/sources.list.d/debian-unstable.list"
-    if [ -f "$path" ]; then return 1; fi
+    if [ -f "$path" ]; then echo "deb unstable list already exists"; return 1; fi
     local text="$(cat <<EOF
 deb http://deb.debian.org/debian unstable main
 deb-src http://deb.debian.org/debian unstable main
@@ -13,7 +13,7 @@ EOF
 
 function write-preferences {
     local path="/etc/apt/preferences"
-    if [ -f "$path" ]; then return 1; fi
+    if [ -f "$path" ]; then echo "apt preferences already exist"; return 1; fi
     local text="$(cat <<EOF
 Package: *
 Pin: release a=trixie

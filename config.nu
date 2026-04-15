@@ -55,9 +55,7 @@ $env.config.keybindings ++= [
             cmd: ([
                 $nu.env-path
                 $nu.config-path
-                ...($nu.user-autoload-dirs
-                | first
-                | try { ls $in | get name } catch { [] })
+                ...(try { ls ...$nu.user-autoload-dirs | get name } catch { [] })
             ] | par-each { $'source `($in)`' } | str join '; ')
         }
     }
@@ -66,6 +64,15 @@ $env.config.keybindings ++= [
 overlay use custom.nu
 
 # ——— main ————————————————————————————————————————————————————————————————————
+def main []: nothing -> nothing {
+    let vendor_auto: path = $nu.vendor-autoload-dirs | where $it =~ $nu.home-dir | first
+    try {
+        if not ($vendor_auto | path type) == dir {
+            rm --force --verbose $vendor_auto
+            mkdir --verbose $vendor_auto
+        }
+    }
+}
 $nu.vendor-autoload-dirs
 | where $it =~ $nu.home-dir
 | first

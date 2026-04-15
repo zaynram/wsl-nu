@@ -273,8 +273,8 @@ def "main zellij" []: nothing -> nothing {
         try {
             mkdir --verbose $fish_completions
             let tmp = mktemp --suffix .fish
-            zellij setup --generate-completion fish | save --force $tmp
-            sudo mv $tmp ($fish_completions | path join zellij.fish)
+            $"(zellij setup --generate-completion fish)" | save --raw --force $tmp
+            sudo mv $"($tmp)" $"($fish_completions | path join zellij.fish)"
             {src: `zellij.fish` dst: $fish_completions} | show copy
         } catch {
             error make "failed to setup zellij completions"

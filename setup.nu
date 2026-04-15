@@ -75,10 +75,6 @@ def "show copy" []: [
 
 #MARK: Utilities
 
-def command [name: string]: nothing -> bool {
-    (which $name | compact | length) > 0
-}
-
 def --wrapped "pixi global" [...rest: string]: nothing -> nothing {
     if (command pixi) {
         ^pixi global ...$rest

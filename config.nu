@@ -64,30 +64,28 @@ $env.config.keybindings ++= [
 overlay use custom.nu
 
 # ——— main ————————————————————————————————————————————————————————————————————
-def main []: nothing -> nothing {
-    let vendor_auto: path = $nu.vendor-autoload-dirs | where $it =~ $nu.home-dir | first
+def --env main []: nothing -> nothing {
+    $nu.vendor-autoload-dirs
+    | where $it =~ $nu.home-dir
+    | first
+    | let vendor_auto: path
+
     try {
-        if not ($vendor_auto | path type) == dir {
-            rm --force --verbose $vendor_auto
+        if ($vendor_auto | path type) != dir {
+            rm --force $vendor_auto
             mkdir --verbose $vendor_auto
         }
+        if (command carapace) {
+            load-env {CARAPACE_LENIENT: 1 CARAPACE_BRIDGES: fish}
+            let script: path = $vendor_auto | path join carapace.nu
+            if ($script | stale) { carapace _carapace nushell | save --force $script }
+        }
+    } catch {
+        error make "failed to refresh vendor autoload scripts"
     }
-}
-$nu.vendor-autoload-dirs
-| where $it =~ $nu.home-dir
-| first
-| let vendor_auto
-| if not ($vendor_auto | path exists) {
-    try { mkdir $vendor_auto --verbose } catch { error make }
-} | if (which carapace | length) > 0 {
-    load-env {carapace_lenient: 1 carapace_bridges: fish}
-    $vendor_auto
-    | path join carapace.nu
-    | let carapace_nu
-    | if ($carapace_nu | stale) { try {
-        carapace _carapace nushell | save --progress --force $carapace_nu
-    } }
 }
 
 # ——— prompt ——————————————————————————————————————————————————————————————————
-try { print $"(ansi c)(fortune)(ansi rst)" }
+if (command fortune) {
+    fortune | ansi gradient --fgstart '0x40c9ff' --fgend '0xe81cff' | print
+}

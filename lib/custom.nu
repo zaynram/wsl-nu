@@ -51,7 +51,17 @@ export module info {
     export alias la = ls --all --full-paths
     export alias ll = ls --full-paths
     export alias ld = ls --directory
+    # Check if a command exists on PATH
+    #
+    @category information
+    export def command [
+        name: string # The command name to check for
+    ]: nothing -> bool {
+        (which $name | compact --empty | length) > 0
+    }
     # Check if a file is older than a set duration.
+    #
+    @category information
     export def stale [
         path?: path # Path of the file to check
         --max-age (-m): duration = 1day # Time since last modification to consider stale
@@ -91,21 +101,23 @@ export use http *
 
 export module navigate {
     export alias dev = try { cd ~/code }
-    # change directory with glob matching
+    # Change directory with glob matching
+    #
+    @category location
     export def --env nav [
-        exp: glob, # glob expression to match target directory against
+        pattern: glob, # Glob pattern to match target directory against
     ]: nothing -> nothing {
-        try { ls $exp --directory
-            | get 0
-            | into string
+        try {
+            ls $pattern --directory --full-paths
+            | get 0.name
             | cd $in
         } catch {
             error make {
                 msg: "no directories matched the glob pattern"
                 labels: [
-                    {text: `expression` span: (metadata $exp).span}
+                    {text: `pattern` span: (metadata $pattern).span}
                 ]
-            } | print
+            }
         }
     }
 }
@@ -115,16 +127,34 @@ export use navigate *
 # ——— manage ——————————————————————————————————————————————————————————————————
 
 export module manage {
+    # Install a plugin using cargo and automatically add it
+    #
+    @category plugins
     export def "plugin install" [
-        name: string # the plugin name
-        --owner(-o): string = '' # github repository owner
+        name: oneof<path, string> # The name of the plugin (must start with 'nu_plugin_')
+        --owner(-o): string # The owner of the repository to install from
     ]: nothing -> nothing {
         match $owner {
-            '' => $name
-            _  => [--git $'https://github.com/($owner)/($name).git']
-        } | prepend install | cargo ...$in
-        plugin add $name
-        print $"installed ($name)"
+            null => [$name]
+            _    => [--git $'https://github.com/($owner)/($name).git']
+        } | let args: list<string>
+        try {
+            cargo install ...$args
+            plugin add (
+                $env.CARGO_HOME?
+                | default ($nu.home-dir | path join .cargo)
+                | path join bin $name
+            )
+        } catch {|err|
+            error make {
+                msg: "plugin installation failed"
+                labels: [
+                    {text: `plugin`     span: (metadata $name).span}
+                    {text: `arguments`  span: (metadata $args).span}
+                ]
+                inner: [$err]
+            }
+        }
     }
 }
 

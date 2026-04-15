@@ -83,7 +83,7 @@ def --wrapped "pixi global" [...rest: string]: nothing -> nothing {
     if (command pixi) {
         ^pixi global ...$rest
     } else if (command uv) {
-        uv tool ($rest | first) ($rest | last)
+        uv tool ...([($rest | first) ($rest | last)] | compact --empty | uniq)
     } else {
         error make "no global tool installer detected"
     }

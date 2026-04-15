@@ -53,10 +53,10 @@ $env.config.keybindings ++= [
         event: {
             send: executehostcommand
             cmd: ([
+                ...(try { ls $nu.user-autoload-dirs | get name } | default [])
                 $nu.env-path
                 $nu.config-path
-                ...(try { ls ...$nu.user-autoload-dirs | get name } catch { [] })
-            ] | par-each { $'source `($in)`' } | str join '; ')
+            ] | par-each --keep-order { $'source `($in)`' } | str join '; ')
         }
     }
 ]

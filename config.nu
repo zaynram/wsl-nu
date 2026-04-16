@@ -63,27 +63,36 @@ $env.config.keybindings ++= [
 # ——— activation ——————————————————————————————————————————————————————————————
 overlay use custom.nu
 
-def --env main []: nothing -> nothing {
-    $nu.vendor-autoload-dirs
-    | where ($it | str contains $nu.home-dir) # nu-lint-ignore: contains_to_regex_op
-    | first
-    | let vendor_auto: path
+def "autoload path" [...segments: string --user(-u)]: [
+    nothing -> path
+] {
+    let target: path = if $user { $nu.user-autoload-dirs } else {
+        $nu.vendor-autoload-dirs
+        | where ($it | str contains $nu.home-dir) # nu-lint-ignore: contains_to_regex_op
+    } | first
 
-    try {
-        if ($vendor_auto | path type) != dir {
-            rm --force $vendor_auto
-            mkdir --verbose $vendor_auto
+    if ($target | path type) != dir {
+        try {
+            rm --force $target
+            mkdir --verbose $target
+        } catch {
+            error make ("failed to create directory: " + $target)
         }
-        if (command carapace) {
-            load-env {CARAPACE_LENIENT: 1 CARAPACE_BRIDGES: fish}
-            let script: path = $vendor_auto | path join carapace.nu
-            if ($script | stale) { carapace _carapace nushell | save --force $script }
-        }
-    } catch {
-        error make "failed to refresh vendor autoload scripts"
     }
 
-    if (command fortune) {
-        fortune | ansi gradient --fgstart '0x40c9ff' --fgend '0xe81cff' | print
+    $target | path join ...$segments
+}
+
+try {
+    if (command carapace) {
+        load-env {CARAPACE_LENIENT: 1 CARAPACE_BRIDGES: fish}
+        let script: path = autoload path carapace.nu
+        if ($script | stale) { carapace _carapace nushell | save --force $script }
     }
+} catch {
+    error make "failed to refresh vendor autoload scripts"
+}
+
+if (command fortune) {
+    fortune | ansi gradient --fgstart '0x40c9ff' --fgend '0xe81cff' | print
 }

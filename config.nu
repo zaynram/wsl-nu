@@ -83,14 +83,10 @@ def "autoload path" [...segments: string --user(-u)]: [
     $target | path join ...$segments
 }
 
-try {
-    if (command carapace) {
-        load-env {CARAPACE_LENIENT: 1 CARAPACE_BRIDGES: fish}
-        let script: path = autoload path carapace.nu
-        if ($script | stale) { carapace _carapace nushell | save --force $script }
-    }
-} catch {
-    error make "failed to refresh vendor autoload scripts"
+if (command carapace) {
+    load-env {CARAPACE_LENIENT: 1 CARAPACE_BRIDGES: fish}
+    let script: path = autoload path carapace.nu
+    if ($script | stale) { try { carapace _carapace nushell | save --force $script } }
 }
 
 if (command fortune) {

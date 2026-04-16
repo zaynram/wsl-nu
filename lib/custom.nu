@@ -5,6 +5,25 @@
 export module path {
     export alias pj = path join
     export alias px = path expand
+    # Construct a path in an autoloaded directory, with assurance of the directory's existence.
+    #
+    export def "autoload path" [
+        ...segments: string # Path segments to join to the directory.
+        --user(-u) # Use the user-autoload-dirs instead of vendor-autoload-dirs
+    ]: nothing -> path {
+        if $user {
+            $nu.user-autoload-dirs
+        } else {
+            $nu.vendor-autoload-dirs | where ($it | str contains $nu.home-dir)  # nu-lint-ignore: contains_to_regex_op
+        } | first
+        | path type
+        | if $in == dir { $in } else { try {
+                rm --force $in; mkdir $in; $in
+            } catch {
+                error make "directory creation failed"
+            }
+        } | path join ...$segments
+    }
 }
 
 export use path *

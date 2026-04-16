@@ -343,10 +343,10 @@ def "main zellij" []: nothing -> nothing { # nu-lint-ignore: max_function_body_l
         error make "failed to write zellij configuration files"
     }
 
-    if (command carapace) {
+    if $nu.os-info.family == unix and (command carapace) {
         show step zellij/completions
 
-        [usr share fish completions]
+        [/ usr share fish completions]
         | path join
         | let fish_completions: path
         | path join zellij.fish

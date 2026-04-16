@@ -492,20 +492,19 @@ def main [
     --modules(-m) # Install the Nushell modules on this host
     --all(-a) # Run all setup functions, not just the base set. Enables all other flags.
 ]: nothing -> nothing {
-    [[str flag]; [`config` $config] [`autoload` $autoload] [`modules` $modules]]
-    | where flag or $all
-    | get str
-    | let desc: list<string>
-    if ($desc | length) > 0 { $desc | str join + } else { main info }
-    if not $config or $all { [] } else {
-        [{src: (resolve config.nu) dst: $nu.config-path}]
-    } | if not $autoload or $all { $in } else {
-        $in | append {src: (resolve auto *.nu --glob) dst: (autoload path --user)}
-    } | if not $modules or $all { $in } else {
-        $in | append {src: (resolve lib *.nu --glob)  dst: $LIB}
-    } | iter --keep-order { copy file }
-
-    if $all {
+    [[name flag data];
+        [config     $config     {src: (resolve config.nu) dst: $nu.config-path}]
+        [autoload   $autoload   {src: (resolve auto *.nu --glob) dst: (autoload path --user)}]
+        [modules    $modules    {src: (resolve lib *.nu --glob)  dst: $LIB}]
+    ] | each { let row: record<name: string flag: bool data: record<src: string dst: path>>
+        if ($row.flag or $all) {
+            show step $row.name
+            $row.data | copy file
+            true
+        }
+    } | compact | if ($in | length) == 0 {
+        main info
+    } else if $all {
         main languages --install
         main helix --grammars
         main zellij

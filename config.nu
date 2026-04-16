@@ -63,7 +63,6 @@ $env.config.keybindings ++= [
 # ——— activation ——————————————————————————————————————————————————————————————
 overlay use custom.nu
 
-# ——— main ————————————————————————————————————————————————————————————————————
 def --env main []: nothing -> nothing {
     $nu.vendor-autoload-dirs
     | where $it =~ $nu.home-dir
@@ -83,9 +82,8 @@ def --env main []: nothing -> nothing {
     } catch {
         error make "failed to refresh vendor autoload scripts"
     }
-}
 
-# ——— prompt ——————————————————————————————————————————————————————————————————
-if (command fortune) {
-    fortune | ansi gradient --fgstart '0x40c9ff' --fgend '0xe81cff' | print
+    if (command fortune) {
+        fortune | ansi gradient --fgstart '0x40c9ff' --fgend '0xe81cff' | print
+    }
 }

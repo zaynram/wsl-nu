@@ -16,12 +16,17 @@ export module path {
         } else {
             $nu.vendor-autoload-dirs | where ($it | str contains $nu.home-dir)  # nu-lint-ignore: contains_to_regex_op
         } | first
+        | let directory: path
         | path type
-        | if $in == dir { $in } else { try {
-                rm --force $in; mkdir $in; $in
+        | if $in == dir {
+            $directory
+        } else { try {
+                rm --force $directory
+                mkdir $directory
             } catch {
                 error make "directory creation failed"
             }
+            $directory
         } | path join ...$segments
     }
 }

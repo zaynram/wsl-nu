@@ -7,9 +7,12 @@ overlay use ./lib/custom.nu
 #MARK: Paths
 
 const HERE = path self .
-const AUTO = $nu.user-autoload-dirs | get --optional 0
-const LIB = $nu.data-dir | path join modules
 const BIN = $HERE | path join scripts
+const LIB = $nu.data-dir | path join modules
+
+if not ($LIB | path exists) {
+    try { mkdir --verbose $LIB }
+}
 
 #MARK: Data
 
@@ -497,9 +500,9 @@ def main [
     if not $config or $all { [] } else {
         [{src: (resolve config.nu) dst: $nu.config-path}]
     } | if not $autoload or $all { $in } else {
-        $in | append {src: (resolve auto *.nu --glob) dst: (try { mkdir $AUTO }; $AUTO)}
+        $in | append {src: (resolve auto *.nu --glob) dst: (autoload path --user)}
     } | if not $modules or $all { $in } else {
-        $in | append {src: (resolve lib *.nu --glob)  dst: (try { mkdir $LIB }; $LIB)}
+        $in | append {src: (resolve lib *.nu --glob)  dst: $LIB}
     } | iter --keep-order { copy file }
 
     if $all {

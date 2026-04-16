@@ -96,18 +96,21 @@ export module info {
             record<name: string, type: string, size: filesize, modified: datetime>
         > -> bool
         table<name: string, type: string, size: filesize, modified: datetime> -> list<bool>
-    ] {|x: oneof<nothing path record table>| describe | let type: string
-        match $type {
+    ] {|| let x: oneof<nothing path record table>
+        | describe
+        | match $in {
             `nothing`   => {
                 if $path != null {
-                    try { ls $path } | default []
+                    try { ls $path | first }
                 } else {
                     error make "a path or record must be provided"
                 }
             }
-            `string`    => (try { ls $x } | default [])
-            _           => (if $type =~ record { [$x] } else { $x })
-        } | par-each --keep-order {|r| $r == null or ((date now) - $r.modified) > $max_age }
+            `string`        => { try { ls $x | first } }
+            _               => $x
+        } | par-each --keep-order {|r|
+            $r == null or ((date now) - $r.modified) > $max_age
+        }
     }
 }
 

@@ -65,7 +65,7 @@ overlay use custom.nu
 
 def --env main []: nothing -> nothing {
     $nu.vendor-autoload-dirs
-    | where $it =~ $nu.home-dir
+    | where ($it | str contains $nu.home-dir) # nu-lint-ignore: contains_to_regex_op
     | first
     | let vendor_auto: path
 

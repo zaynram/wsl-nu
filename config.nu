@@ -23,7 +23,7 @@ load-env {
     visual: (which code-insiders | get path | get --optional 0 | default code)
     editor: (which hx | get path | get --optional 0 | default nano)
     ...([pnpm nupm] | par-each {|el|
-        {$'($el)_home': ($nu.data-dir | path dirname | path join $el)}
+        {($el)_home: ($nu.data-dir | path dirname | path join $el)}
     } | into record)
 }
 

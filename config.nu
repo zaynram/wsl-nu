@@ -63,29 +63,9 @@ $env.config.keybindings ++= [
 # ——— activation ——————————————————————————————————————————————————————————————
 overlay use custom.nu
 
-def "autoload path" [...segments: string --user(-u)]: [
-    nothing -> path
-] {
-    let target: path = if $user { $nu.user-autoload-dirs } else {
-        $nu.vendor-autoload-dirs
-        | where ($it | str contains $nu.home-dir) # nu-lint-ignore: contains_to_regex_op
-    } | first
-
-    if ($target | path type) != dir {
-        try {
-            rm --force $target
-            mkdir --verbose $target
-        } catch {
-            error make ("failed to create directory: " + $target)
-        }
-    }
-
-    $target | path join ...$segments
-}
-
 if (command carapace) {
     load-env {CARAPACE_LENIENT: 1 CARAPACE_BRIDGES: fish}
-    let script: path = autoload path carapace.nu
+    let script: path = (autoload path carapace.nu)
     if ($script | stale) { try { carapace _carapace nushell | save --force $script } }
 }
 

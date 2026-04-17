@@ -1,3 +1,4 @@
+# ——— use-grammars ————————————————————————————————————————————————————————————
 [use-grammars]
 only = [
     "awk",
@@ -64,33 +65,54 @@ only = [
     "yaml",
 ]
 
-[language-server]
-superhtml = { command = "superhtml", args = ["lsp", "--syntax-only"] }
+# ——— language-server.superhtml ———————————————————————————————————————————————
+[language-server.superhtml]
+args    = ["lsp", "--syntax-only"]
+command = "superhtml"
 
+# ——— language-server.lemminx —————————————————————————————————————————————————
+[language-server.lemminx]
+args    = []
+command = "lemminx"
+
+    [language-server.lemminx.config]
+    xml.file-associations = [
+        { pattern = "**/*.xsd", systemId = "http://www.w3.org/2001/XMLSchema.xsd" },
+    ]
+    xml.format.joinCDATALines = false
+    xml.format.joinContentLines = false
+    xml.format.preserveAttributeLineBreaks = true
+    xml.format.spaceBeforeEmptyCloseTag = true
+    xml.format.splitAttributes = "alignWithFirstAttr"
+    xml.trace.server = "verbose"
+    xml.validation.enabled = true
+    xml.validation.schema.enabled = "always"
+
+
+# ——— language.nu —————————————————————————————————————————————————————————————
 [[language]]
 auto-format = true
 formatter   = { command = "nufmt", args = ["--stdin"] }
 name        = "nu"
 
+# ——— language.json ———————————————————————————————————————————————————————————
 [[language]]
-language-servers = ["tombi"]
-name             = "toml"
+comment-tokens   = "//"
+file-types       = ["json", "jsonc", "json5", "code-workspace"]
+indent.tab-width = 4
+indent.unit      = " "
+name             = "json"
 
+# ——— language.html ———————————————————————————————————————————————————————————
 [[language]]
-comment-tokens = "//"
-file-types     = ["json", "jsonc", "json5", "code-workspace"]
-indent         = { tab-width = 4, unit = " " }
-name           = "json"
+auto-format       = true
+formatter.args    = ["fmt", "--stdin", "--syntax-only"]
+formatter.command = "superhtml"
+name              = "html"
+soft-wrap.enable  = true
 
-
+# ——— language.xml ————————————————————————————————————————————————————————————
 [[language]]
-auto-format = true
-file-types = ["html", "xml"]
-formatter = { command = "superhtml", args = [
-    "fmt",
-    "--stdin",
-    "--syntax-only",
-] }
-language-servers = ["superhtml"]
-name = "html"
-soft-wrap = { enable = true }
+auto-format      = true
+language-servers = ["lemminx"]
+name             = "xml"

@@ -106,35 +106,13 @@ def "sudo nu" [
 # To override the session name or working directory, use the --directory/-d flag.
 @category multiplexer
 def attach [
-    session: string # The desired session name to create or attach to
-    --no-editor(-n) # Sets the session layout to 'no-editor' instead of 'hx-editor'
-    --directory(-d): path # Override the directory to spawn the process in
+    session: oneof<path string> # The desired session name to create or attach to
+    --project(-p) # Resolve the session name against the projects folder.
+    --directory(-d): path # Override the directory to spawn the process in. Takes precedence over --project.
 ]: nothing -> nothing {
-    let target: path = if $directory != null { $directory } else {
-        [$nu.home-dir code $session] | path join
-    }
-    match ($target | path type) {
-        dir => {
-            try { cd $target } catch { error make 'failed to change to target directory' }
-            try { zellij attach --create-background $session | out+err>/dev/null }
-            if $no_editor { 'no-editor' } else { 'hx-editor' }
-            | do { zellij --session $session action override-layout $in }
-            zellij attach $session
-        }
-        _ => (error make {
-                msg: 'invalid target directory'
-                labels: [
-                    {
-                        text: session
-                        span: (metadata $session).span
-                    }
-                    {
-                        text: target
-                        span: (metadata $target).span
-                    }
-                ]
-            })
-    }
+    $directory
+    | default (if not $project { pwd } else { $nu.home-dir | path join code $session })
+    | zellij attach $session --create options --default-cwd $in
 }
 
 # Detach from a zellij session using the session's name.

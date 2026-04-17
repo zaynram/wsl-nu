@@ -145,12 +145,9 @@ def attach [
         [false $d] => ($d | default $env.pwd)
     } | let working_dir: path
 
-    await { zellij list-sessions --short }
-    | let session_list: string
-
     try {
         cd $working_dir
-        if $session_list !~ $session { zellij attach $session --create-background }
+        await { zellij attach $session --create-background }
         zellij --session $session action override-layout main
         zellij attach $session
     } catch {

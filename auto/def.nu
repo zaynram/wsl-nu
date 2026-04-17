@@ -6,10 +6,8 @@ const HERE = path self .
 def await [
     closure?: closure # The closure to execute and complete.
     --check(-c) # Whether to raise an error for non-zero exit codes
-]: [
-    oneof<closure nothing> -> string
-] {|| default { $closure }
-    | do --ignore-errors $in
+]: nothing -> string {
+    do --ignore-errors $closure
     | complete
     | let output
     if not $check or $output.exit_code? == 0 {
@@ -19,7 +17,8 @@ def await [
             msg: ($output.stderr? | default "command completed with errors")
             code: ($output.exit_code? | default 1 | into string)
             labels: [
-                {text: `command` span: (metadata ($in | default $closure)).span}
+                {text: `command` span: (metadata $closure).span}
+
             ]
         }
     }

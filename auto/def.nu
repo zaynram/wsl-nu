@@ -151,8 +151,7 @@ def attach [
     | try { ls $in --full-paths | get 0.name }
     | let layout_file: path
 
-    zellij list-sessions --short
-    | await
+    await { zellij list-sessions --short }
     | let session_list: string
 
     try {

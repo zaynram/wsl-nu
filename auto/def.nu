@@ -159,7 +159,10 @@ def attach [
 #
 @category multiplexer
 def detach [
-    session: string # The name of the session to detach from
+    session?: string # The name of the session to detach from
 ]: nothing -> nothing {
-    zellij --session $session action detach
+    [action detach]
+    | if $session != null { prepend [--session $session] } else { $in }
+    | zellij ...$in
+
 }

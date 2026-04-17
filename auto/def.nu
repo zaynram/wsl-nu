@@ -1,12 +1,39 @@
 const HERE = path self .
 
+# Wait for the external command to complete and return its standard output.
+#
+@category builtin
+def await [
+    closure?: closure # The closure to execute and complete.
+    --check(-c) # Whether to raise an error for non-zero exit codes
+]: [
+    oneof<closure nothing> -> string
+] {|| default { $closure }
+    | do --ignore-errors $in
+    | complete
+    | let output
+    if not $check or $output.exit_code? == 0 {
+        $output.stdout
+    } else {
+        error make {
+            msg: ($output.stderr? | default "command completed with errors")
+            code: ($output.exit_code? | default 1 | into string)
+            labels: [
+                {text: `command` span: (metadata $closure).span}
+            ]
+        }
+    }
+}
+
 # Edit the autoloaded alias definition file
+#
 @category configuration
 def "config alias" []: nothing -> nothing {
     ^$env.config.buffer_editor ($HERE | path join alias.nu)
 }
 
 # Edit the autoloaded function definition file
+#
 @category configuration
 def "config def" []: nothing -> nothing { ^$env.config.buffer_editor ($HERE | path join def.nu) }
 
@@ -18,6 +45,7 @@ def "config def" []: nothing -> nothing { ^$env.config.buffer_editor ($HERE | pa
 # If a selection of subcommands is provided using --pick(-p)/--omit(-o), arguments will not be passed.
 #
 # To view more specific help information, you can pass --help as a string with the subcommand(s).
+#
 @category configuration
 def --wrapped "setup nu" [
     ...rest: string # Arguments to pass through to function. Subcommands: [save|info|carapace|helix|oh-my-posh|languages|zellij]
@@ -50,6 +78,7 @@ def --wrapped "setup nu" [
 }
 
 # Run a command in an elevated Bash session.
+#
 @category elevation
 def "sudo bash" [...args: string]: [
     nothing -> record<stdout: string stderr: string exit_code: int>
@@ -73,6 +102,7 @@ def "sudo bash" [...args: string]: [
 }
 
 # Run a command or closure in an elevated Nushell session.
+#
 @category elevation
 def "sudo nu" [
     closure: closure # The closure to execute
@@ -104,18 +134,39 @@ def "sudo nu" [
 #
 # Known projects are resolved by matching the session name to a directory name under ~/code.
 # To override the session name or working directory, use the --directory/-d flag.
+#
 @category multiplexer
 def attach [
-    session: oneof<path string> # The desired session name to create or attach to
-    --project(-p) # Resolve the session name against the projects folder.
-    --directory(-d): path # Override the directory to spawn the process in. Takes precedence over --project.
+    session: string # The desired session name to create or attach to.
+    --project(-p) # Resolve the session name against the projects folder. Prioritized over --directory.
+    --directory(-d): path # Override the directory to spawn the process in. Does nothing if --project is passed.
 ]: nothing -> nothing {
-    $directory
-    | default (if not $project { pwd } else { $nu.home-dir | path join code $session })
-    | zellij attach $session --create options --default-cwd $in
+    match [$project $directory] {
+        [true  $d] => ([$nu.home-dir code $session] | path join)
+        [false $d] => ($d | default $env.pwd)
+    } | let working_dir: path
+
+    $nu.home-dir
+    | path join .config zellij layouts *.kdl
+    | try { ls $in --full-paths | get 0.name }
+    | let layout_file: path
+
+    zellij list-sessions --short
+    | await
+    | let session_list: string
+
+    try {
+        cd $working_dir
+        if $session_list !~ $session { zellij attach $session --create-background }
+        if $layout_file != null { zellij --session $session action override-layout $layout_file }
+        zellij attach $session
+    } catch {
+        error make "failed to attach (or create) session"
+    }
 }
 
 # Detach from a zellij session using the session's name.
+#
 @category multiplexer
 def detach [
     session: string # The name of the session to detach from

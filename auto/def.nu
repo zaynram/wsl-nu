@@ -145,18 +145,13 @@ def attach [
         [false $d] => ($d | default $env.pwd)
     } | let working_dir: path
 
-    $nu.home-dir
-    | path join .config zellij layouts *.kdl
-    | try { ls $in --full-paths | get 0.name }
-    | let layout_file: path
-
     await { zellij list-sessions --short }
     | let session_list: string
 
     try {
         cd $working_dir
         if $session_list !~ $session { zellij attach $session --create-background }
-        if $layout_file != null { zellij --session $session action override-layout $layout_file }
+        zellij --session $session action override-layout main
         zellij attach $session
     } catch {
         error make "failed to attach (or create) session"

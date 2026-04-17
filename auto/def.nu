@@ -9,6 +9,7 @@ def await [
 ]: [
     oneof<closure nothing> -> string
 ] {|| default { $closure }
+    | let command
     | do --ignore-errors $in
     | complete
     | let output
@@ -19,7 +20,7 @@ def await [
             msg: ($output.stderr? | default "command completed with errors")
             code: ($output.exit_code? | default 1 | into string)
             labels: [
-                {text: `command` span: (metadata $closure).span}
+                {text: `command` span: (metadata $command).span}
             ]
         }
     }

@@ -161,8 +161,7 @@ def attach [
 def detach [
     session?: string # The name of the session to detach from
 ]: nothing -> nothing {
-    [action detach]
-    | if $session != null { prepend [--session $session] } else { $in }
-    | zellij ...$in
-
+    zellij ...(
+        if $session != null { [--session $session] } else { [] }
+    ) action detach
 }

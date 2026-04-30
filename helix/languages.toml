@@ -1,118 +1,128 @@
 # ——— use-grammars ————————————————————————————————————————————————————————————
 [use-grammars]
-only = [
-    "awk",
-    "bash",
-    "bibtex",
-    "c",
-    "c-sharp",
-    "cmake",
-    "comment",
-    "cpp",
-    "css",
-    "csv",
-    "cython",
-    "debian",
-    "diff",
-    "dockerfile",
-    "fish",
-    "git-config",
-    "git-rebase",
-    "graphql",
-    "hosts",
-    "html",
-    "ini",
-    "ink",
-    "java",
-    "javascript",
-    "jq",
-    "jsdoc",
-    "json",
-    "json5",
-    "just",
-    "kdl",
-    "latex",
-    "llvm",
-    "log",
-    "mail",
-    "make",
-    "markdown",
-    "matlab",
-    "mermaid",
-    "nginx",
-    "nu",
-    "passwd",
-    "pem",
-    "php",
-    "powershell",
-    "properties",
-    "python",
-    "regex",
-    "robot",
-    "rshtml",
-    "rust",
-    "rust-format-args",
-    "scss",
-    "sql",
-    "sshclientconfig",
-    "svelte",
-    "task",
-    "todotxt",
-    "toml",
-    "tsx",
-    "typescript",
-    "xml",
-    "yaml",
-]
+    only = [
+        'awk',
+        'bash',
+        'bibtex',
+        'c',
+        'c-sharp',
+        'cmake',
+        'comment',
+        'cpp',
+        'css',
+        'csv',
+        'cython',
+        'debian',
+        'diff',
+        'dockerfile',
+        'fish',
+        'git-config',
+        'git-rebase',
+        'graphql',
+        'hosts',
+        'html',
+        'ini',
+        'ink',
+        'java',
+        'javascript',
+        'jq',
+        'jsdoc',
+        'json',
+        'json5',
+        'just',
+        'kdl',
+        'latex',
+        'llvm',
+        'log',
+        'mail',
+        'make',
+        'markdown',
+        'matlab',
+        'mermaid',
+        'nginx',
+        'nu',
+        'passwd',
+        'pem',
+        'php',
+        'powershell',
+        'properties',
+        'python',
+        'regex',
+        'robot',
+        'rshtml',
+        'rust',
+        'rust-format-args',
+        'scss',
+        'sql',
+        'sshclientconfig',
+        'svelte',
+        'task',
+        'todotxt',
+        'toml',
+        'tsx',
+        'typescript',
+        'xml',
+        'yaml',
+    ]
 
 # ——— language-server.superhtml ———————————————————————————————————————————————
 [language-server.superhtml]
-args    = ["lsp", "--syntax-only"]
-command = "superhtml"
+    args    = [ 'lsp' ]
+    command = 'superhtml'
 
 # ——— language-server.lemminx —————————————————————————————————————————————————
 [language-server.lemminx]
-args    = []
-command = "lemminx"
+    args    = []
+    command = 'lemminx'
 
     [language-server.lemminx.config]
-    xml.file-associations = [
-        { pattern = "**/*.xsd", systemId = "http://www.w3.org/2001/XMLSchema.xsd" },
-    ]
-    xml.format.joinCDATALines = false
-    xml.format.joinContentLines = false
-    xml.format.preserveAttributeLineBreaks = true
-    xml.format.spaceBeforeEmptyCloseTag = true
-    xml.format.splitAttributes = "alignWithFirstAttr"
-    xml.trace.server = "verbose"
-    xml.validation.enabled = true
-    xml.validation.schema.enabled = "always"
-
+        xml.file-associations                  = [
+            { pattern = '**/*.xsd', systemId = 'http://www.w3.org/2001/XMLSchema.xsd' },
+        ]
+        xml.format.joinCDATALines              = false
+        xml.format.joinContentLines            = false
+        xml.format.preserveAttributeLineBreaks = true
+        xml.format.spaceBeforeEmptyCloseTag    = true
+        xml.format.splitAttributes             = 'alignWithFirstAttr'
+        xml.trace.server                       = 'verbose'
+        xml.validation.enabled                 = true
+        xml.validation.schema.enabled          = 'always'
 
 # ——— language.nu —————————————————————————————————————————————————————————————
 [[language]]
-auto-format = true
-formatter   = { command = "nufmt", args = ["--stdin"] }
-name        = "nu"
+    auto-format = true
+    formatter   = { command = 'nufmt', args = [ '--stdin' ] }
+    name        = 'nu'
 
 # ——— language.json ———————————————————————————————————————————————————————————
 [[language]]
-comment-tokens   = "//"
-file-types       = ["json", "jsonc", "json5", "code-workspace"]
-indent.tab-width = 4
-indent.unit      = " "
-name             = "json"
+    comment-tokens   = '//'
+    file-types       = [ 'json', 'jsonc', 'json5', 'code-workspace' ]
+    indent.tab-width = 4
+    indent.unit      = ' '
+    name             = 'json'
+    formatter        = { command = 'prettier', args = [
+        '--parser',
+        'json',
+        '--write'
+    ] }
 
 # ——— language.html ———————————————————————————————————————————————————————————
 [[language]]
-auto-format       = true
-formatter.args    = ["fmt", "--stdin", "--syntax-only"]
-formatter.command = "superhtml"
-name              = "html"
-soft-wrap.enable  = true
+    auto-format      = true
+    formatter        = { command = 'superhtml', args = [ 'fmt', '--stdin' ] }
+    name             = 'html'
+    soft-wrap.enable = true
 
 # ——— language.xml ————————————————————————————————————————————————————————————
 [[language]]
-auto-format      = true
-language-servers = ["lemminx"]
-name             = "xml"
+    auto-format      = true
+    language-servers = [ 'lemminx' ]
+    name             = 'xml'
+    soft-wrap.enable = true
+
+# ——— language.markdown ———————————————————————————————————————————————————————
+[[language]]
+    name = "markdown"
+    auto-format      = true
+    soft-wrap.enable = true

@@ -1,53 +1,136 @@
 [theme]
-dark = "catppuccin_macchiato"
-light = "catppuccin_latte"
-fallback = "catppuccin_frappe"
+    dark     = 'catppuccin_macchiato'
+    light    = 'catppuccin_latte'
+    fallback = 'catppuccin_frappe'
 
 [keys]
-
     [keys.normal]
-    C-s = ":w" # Maps Ctrl-s to the typable command :write (save file)
-    C-o = ":open ~/.config/helix/config.toml" # Maps Ctrl-o to opening of the helix config file
+        A-q = ':write-quit!'
+        A-s = ':write!'
+        A-z = 'suspend'
 
-    S-tab = "move_parent_node_start"
-    tab   = "move_parent_node_end"
+        C-r = ':config-reload'
+        C-x = ':write-buffer-close!'
+        C-s = ':write'
+        C-o = ':config-open'
+        C-z = 'undo'
+        C-y = 'redo'
+        C-l = ':open ~/.config/helix/languages.toml'
+        C-f = [ ':format', ':redraw' ]
+
+        up       = ':noop'
+        down     = ':noop'
+        left     = ':noop'
+        right    = ':noop'
+        home     = ':noop'
+        end      = ':noop'
+        pageup   = ':noop'
+        pagedown = ':noop'
+        ins      = 'insert_mode'
+
+        a = 'code_action'
+        n = 'insert_mode'
+        N = 'append_mode'
+        u = 'open_below'
+        o = 'open_above'
+        k = 'move_line_down'
+        j = 'move_char_left'
+        i = 'move_line_up'
+        l = 'move_char_right'
+        h = 'signature_help'
+        H = 'hover'
+        D = 'diagnostics_picker'
+        q = 'select_regex'
+        Q = [ 'select_all', 'select_regex' ]
+
+        "="       = 'page_cursor_half_up'
+        minus     = 'page_cursor_half_down'
+        ret       = [ 'open_below', 'normal_mode' ]
+        backspace = 'delete_char_backward'
+        del       = 'delete_char_forward'
+
+        S-tab = 'move_parent_node_start'
+        tab   = 'move_parent_node_end'
+
+        f.n = 'find_next_char'
+        f.p = 'find_prev_char'
+        f.t = 'find_till_char'
+
+        M.r = 'record_macro'
+        M.p = 'replay_macro'
+
+        s.s = 'search'
+        s.r = 'rsearch'
+        s.g = 'global_search'
+
+        p.f = 'file_picker'
+        p.e = 'file_explorer'
+        p.s = 'symbol_picker'
+        p.b = 'buffer_picker'
+        p.l = 'last_picker'
+        p.j = 'jumplist_picker'
+
+        y.y = 'yank'
+        y.j = 'yank_joined'
+        y.r = 'replace_with_yanked'
+        y.a = 'paste_after'
+        y.b = 'paste_before'
+
+        Y.y = ':clipboard-yank'
+        Y.j = ':clipboard-yank-join'
+        Y.r = ':clipboard-paste-replace'
+        Y.a = ':clipboard-paste-after'
+        Y.b = ':clipboard-paste-before'
+
+        "!"  = ':noop'
+        "/"  = 'command_mode'
+        "?"  = 'command_palette'
+        "\\" = 'shell_insert_output'
 
     [keys.insert]
-    S-tab = "move_parent_node_start"
+        C-y = 'redo'
+        C-z = 'undo'
+        C-s = [ ':write', 'normal_mode' ]
+        C-f = [ ':format', 'normal_mode' ]
+        C-o = 'normal_mode'
+
+        S-tab = 'move_parent_node_start'
 
     [keys.select]
-    S-tab = "extend_parent_node_start"
-    tab   = "extend_parent_node_end"
+        S-tab = 'extend_parent_node_start'
+        tab   = 'extend_parent_node_end'
 
 [editor]
-bufferline               = "multiple"
-rainbow-brackets         = true
-shell                    = ["bash", "-c"]
-trim-final-newlines      = true
-trim-trailing-whitespace = true
+    bufferline               = 'multiple'
+    rainbow-brackets         = true
+    trim-final-newlines      = true
+    trim-trailing-whitespace = true
 
     [editor.cursor-shape]
-    insert = "bar"
-    normal = "underline"
-    select = "block"
+        insert = 'bar'
+        normal = 'underline'
+        select = 'block'
 
     [editor.file-picker]
-    hidden = false
+        hidden      = false
+        git-ignore  = true
+        git-exclude = true
+        git-global  = true
 
     [editor.lsp]
-    display-inlay-hints = true
+        display-inlay-hints = true
 
     [editor.auto-save]
-    after-delay = { enable = true, timeout = 5000 }
-    focus-lost  = true
+        after-delay = { enable = false, timeout = 5000 }
+        focus-lost  = true
 
     [editor.indent-guides]
-    character = "▏"
-    render    = true
+        character = '▏'
+        render    = true
 
     [editor.inline-diagnostics]
-    cursor-line = "hint"
-    other-lines = "warning"
+        cursor-line = 'hint'
+        other-lines = 'warning'
 
     [editor.word-completion]
-    trigger-length = 5
+        trigger-length = 5

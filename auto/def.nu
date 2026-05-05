@@ -191,13 +191,13 @@ module definitions {
             tput smcup
             try {
                 loop {
-                    tput home
+                    clear --keep-scrollback
                     if $env.head { print $"($DOT) (date now)\n($PROMPT) ($s | nu-highlight)\n($KEYBINDS)\n" }
                     print --no-newline (do $c)
                     match (try { input listen --timeout $t --types [key] } catch {}) {
                         {code: q} => { break }
+                        {code: h} => { $env.head = not $env.head }
                         {code: c modifiers: $m} if $m.0? =~ control => { break }
-                        {code: $x} => { clear; if $x == h { $env.head = not $env.head } }
                     }
                 }
             } catch {|err|

@@ -1,4 +1,5 @@
 module aliases {
+    export use std/clip [copy paste]
     # List the full paths matching the glob expression.
     export alias dir = do {|exp: glob = .|
         try {
@@ -7,10 +8,6 @@ module aliases {
             error make $"No paths matched the glob expression: ($exp)"
         }
     }
-    # Set the content of the system clipboard.
-    export alias scb = wl-copy
-    # Get the contents of the system clipboard.
-    export alias gcb = wl-paste
     # Switch to the next swap layout in a zellij session.
     export alias zs = zellij action next-swap-layout
     # Run a command in a new zellij pane.

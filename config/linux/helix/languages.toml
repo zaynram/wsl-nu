@@ -65,6 +65,15 @@
         'yaml',
     ]
 
+# ——— language-server.rust-analyzer ———————————————————————————————————————————
+[language-server.rust-analyzer]
+    args    = []
+    command = 'rust-analyzer'
+
+    [language-server.rust-analyzer.config]
+        check.command  = 'clippy'
+        cargo.features = 'all'
+
 # ——— language-server.superhtml ———————————————————————————————————————————————
 [language-server.superhtml]
     args    = [ 'lsp' ]
@@ -88,11 +97,64 @@
         xml.validation.enabled                 = true
         xml.validation.schema.enabled          = 'always'
 
+# ——— language-server.oxc —————————————————————————————————————————————————————
+[language-server.oxc]
+    args    = [ '--type-check', '--lsp' ]
+    command = 'oxlint'
+
+    [language-server.oxc.config]
+        typeAware = true
+
+# ——— language-server.ty ——————————————————————————————————————————————————————
+[language-server.ty]
+    args    = [ 'server' ]
+    command = 'ty'
+
+    [language-server.ty.config]
+        inlayHints.callArgumentNames = false
+        experimental.rename          = true
+        experimental.autoImport      = true
+
+# ——— language-server.ruff ————————————————————————————————————————————————————
+[language-server.ruff]
+    args    = [ 'server', '-q', '--preview' ]
+    command = 'ruff'
+
+    [language-server.ruff.config]
+        settings.lineLength                   = 100
+        settings.logLevel                     = 'debug'
+        settings.lint.preview                 = true
+        settings.lint.ignore                  = [ 'E501' ]
+        settings.format.preview               = true
+        settings.format.quote-style           = 'single'
+        settings.format.docstring-code-format = true
+        settings.format.indent-style          = 'space'
+
 # ——— language.nu —————————————————————————————————————————————————————————————
 [[language]]
-    auto-format = true
-    formatter   = { command = 'nufmt', args = [ '--stdin' ] }
-    name        = 'nu'
+    auto-format      = true
+    formatter        = { command = 'nufmt', args = [ '--stdin' ] }
+    name             = 'nu'
+    soft-wrap.enable = true
+
+# ——— language.py —————————————————————————————————————————————————————————————
+[[language]]
+    auto-format      = true
+    roots            = [
+        'pyproject.toml',
+        'setup.py',
+        'pixi.lock',
+        'pyrightconfig.json',
+        'requirements.txt',
+        '.venv/',
+        '.pixi/envs/default/'
+    ]
+    formatter        = { command = 'ruff', args = [ 'format', '-' ] }
+    language-servers = [ 'ruff', 'ty' ]
+    indent.tab-width = 4
+    indent.unit      = ' '
+    name             = 'python'
+    soft-wrap.enable = true
 
 # ——— language.json ———————————————————————————————————————————————————————————
 [[language]]
@@ -123,6 +185,19 @@
 
 # ——— language.markdown ———————————————————————————————————————————————————————
 [[language]]
-    name = "markdown"
+    name             = 'markdown'
+    auto-format      = true
+    soft-wrap.enable = true
+
+# ——— language.typescript —————————————————————————————————————————————————————
+[[language]]
+    name             = 'typescript'
+    language-servers = [ 'oxc', 'typescript-language-server' ]
+    formatter        = { command = 'prettier', args = [
+        '--parser',
+        'typescript',
+        '--no-semi',
+        '--write'
+    ] }
     auto-format      = true
     soft-wrap.enable = true

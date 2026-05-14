@@ -7,8 +7,12 @@ explicit_optional_access = false
 [groups]
 
 [rules]
-check_complete_exit_code = "off"
-check_typed_flag_before_use = "off"
+missing_out_type = "off"
+unhandled_external_error = "off"
+catch_builtin_error_try = "off"
+max_function_body_length = "off"
 reflow_wide_lists = "off"
 missing_in_type = "off"
-missing_out_type = "off"
+check_complete_exit_code = "off"
+check_typed_flag_before_use = "off"
+remove_hat_not_builtin = "off"

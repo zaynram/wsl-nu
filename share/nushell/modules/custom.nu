@@ -158,29 +158,26 @@ export module manage {
     #
     @category plugins
     export def "plugin install" [
-        plugin: string # The name (nu_plugin_<name>) or repository (<owner>/nu_plugin_<name>) of the plugin
+        name: oneof<path, string> # The name of the plugin (must start with 'nu_plugin_')
+        --owner(-o): string # The owner of the repository to install from
     ]: nothing -> nothing {
-        if $plugin !~ \w+/nu_plugin_\w+ {
-            {
-                name: $plugin
-                args: [$plugin]
-            }
-        } else {
-            {
-                name: ($plugin | parse "{_}/{name}" | get name | first),
-                args: [--git $'https://github.com/($plugin).git']
-            }
-        } | let config: record<name: string args: list<string>>
-
+        match $owner {
+            null => [$name]
+            _    => [--git $'https://github.com/($owner)/($name).git']
+        } | let args: list<string>
         try {
-            cargo install ...$config.args
-            plugin add (which $config.name | get 0.path)
+            cargo install ...$args
+            plugin add (
+                $env.CARGO_HOME?
+                | default ($nu.home-dir | path join .cargo)
+                | path join bin $name
+            )
         } catch {|err|
             error make {
                 msg: "plugin installation failed"
                 labels: [
-                    {text: 'plugin name' span: (metadata $config.name).span}
-                    {text: 'cargo args'  span: (metadata $config.args).span}
+                    {text: `plugin`     span: (metadata $name).span}
+                    {text: `arguments`  span: (metadata $args).span}
                 ]
                 inner: [$err]
             }

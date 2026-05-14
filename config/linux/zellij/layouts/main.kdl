@@ -1,0 +1,36 @@
+layout {
+    default_tab_template {
+        children
+        pane size=1 borderless=true split_direction="vertical" {
+            plugin location="zellij:compact-bar"
+        }
+    }
+    tab name="editor" hide_floating_panes=true split_direction="vertical" {
+        pane stacked=true {
+            pane name="shell" focus=true
+            pane name="helix" command="hx" close_on_exit=false {
+                args "."
+            }
+        }
+    }
+    tab name="tasks" split_direction="vertical" {
+        pane stacked=true {
+            pane name="test" start_suspended=true command="pixi" focus=true {
+                args "run" "test"
+            }
+            pane name="check" start_suspended=true command="pixi" close_on_exit=false {
+                args "run" "check"
+            }
+        }
+    }
+    tab name="llm" {
+        pane stacked=true {
+            pane name="claude-code" command="claude" start_suspended=true {
+                args "--resume"
+            }
+            pane name="copilot-cli" command="copilot" start_suspended=true {
+                args "--resume" "--experimental" "--allow-all-tools" "--allow-all-urls"
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+Package: *
+Pin: release a=trixie
+Pin-Priority: 500
+
+Package: hx
+Pin: release a=unstable
+Pin-Priority: 1000
+
+Package: *
+Pin: release a=unstable
+Pin-Priority: 100

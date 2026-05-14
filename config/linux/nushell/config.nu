@@ -1,19 +1,22 @@
 # ——— config.nu ———————————————————————————————————————————————————————————————
 # manager = cargo
-# version = "0.111.0"
+# version = "0.112.1"
 # docs = { cli: "config nu --doc | nu-highlight | less -R",
 #          web: "https://www.nushell.sh/book/configuration.html" }
 
 # ——— constants ———————————————————————————————————————————————————————————————
 const NU_LIB_DIRS = [
     ($nu.data-dir | path join modules)
+    ($nu.data-dir | path join scripts)
 ]
 
 const NU_PLUGIN_DIRS = [
     ($nu.current-exe | path dirname)
-    ($nu.data-dir | path join "plugins" | path join (version).version)
-    ($nu.config-path | path dirname | path join "plugins")
+    ($nu.data-dir | path join plugins | path join (version).version)
+    ($nu.config-path | path dirname | path join plugins)
 ]
+
+for d in ($NU_LIB_DIRS ++ $NU_PLUGIN_DIRS | where not ($it | path exists)) { mkdir $d }
 
 # ——— imports——————————————————————————————————————————————————————————————————
 use std/util "path add"
@@ -31,18 +34,20 @@ $env.nu_lib_dirs ++= [
     ($env.nupm_home | path join modules)
 ]
 
-path add {linux: /home/linuxbrew/.linuxbrew/bin}
 path add [
+    /home/linuxbrew/.linuxbrew/bin
     ($env.pnpm_home)
     ($env.nupm_home | path join scripts)
-    ...([.local .pixi .bun .cargo go] | par-each {|el|
-        $nu.home-dir | path join $el bin
-    })
+    ...(
+        [.local .pixi .bun .cargo go]
+        | par-each { prepend $nu.home-dir | path join bin }
+    )
 ]
 $env.path = ($env.path | split row (char esep) | uniq)
 
 # ——— configuration ———————————————————————————————————————————————————————————
 $env.config.buffer_editor = $env.EDITOR
+$env.config.edit_mode = "emacs"
 $env.config.show_banner = false
 $env.config.keybindings ++= [
     {
@@ -63,12 +68,11 @@ $env.config.keybindings ++= [
 # ——— activation ——————————————————————————————————————————————————————————————
 overlay use custom.nu
 
-if (command carapace) {
+try {
     load-env {CARAPACE_LENIENT: 1 CARAPACE_BRIDGES: fish}
-    let script: path = (autoload path carapace.nu)
-    if ($script | stale) { try { carapace _carapace nushell | save --force $script } }
-}
-
-if (command fortune) {
-    fortune | ansi gradient --fgstart '0x40c9ff' --fgend '0xe81cff' | print
+    carapace _carapace nushell | save --force (autoload path carapace.nu)
+} catch {
+    error make "carapace initialization failed"
+} finally {
+    fortune | ansi gradient --fgstart 0x40c9ff --fgend 0xe81cff | print
 }

@@ -1,0 +1,765 @@
+oh-my-posh upgrade --force
+exit
+nu
+cd
+cd code\
+cd nu
+nu setup.nu
+exit
+oh-my-posh print preview
+oh-my-posh print preview --config custom.omp.json
+oh-my-posh enable reload
+setup.nu
+exit
+nu setup.nu
+cd
+cd code/nu
+[ nu_plugin_inc<\n>  nu_plugin_polars<\n>  nu_plugin_gstat<\n>  nu_plugin_formats<\n>  nu_plugin_query<\n>] | each { cargo install $in --locked } | ignore
+let src = ""
+let dst = "dest"
+let src = "ad"
+error make {<\n>            msg: $"failed to copy file"<\n>            labels: [<\n>                [src            (metadata $src).span]<\n>                [destination    (metadata $dst).span]<\n>            ]<\n>        }
+error make {<\n>            msg: $"failed to copy file"<\n>            labels: {<\n>                [text           span]<\n>                [src            (metadata $src).span]<\n>                [destination    (metadata $dst).span]<\n>            }<\n>        }
+cd
+cd code/nu
+nu setup.nu
+$nu.config-path
+$nu.config-path | path basename --replace vendor | path join autoload | path exists
+$nu.config-path | path basename --replace vendor/autoload | path exists
+nu setup.nu
+$nu.config-path | path basename --replace vendor/autoload/oh-my-posh.nu
+$nu.config-path | path basename --replace vendor/autoload/oh-my-posh.nu | path exists
+nu setup.nu
+oh-my-posh enable reload
+nu setup.nu
+config nu
+oh-my-posh enable reload
+oh-my-posh disable reload
+exit
+nu
+exit
+config nu
+oh-my-posh disable reload
+exit
+cd code/nu
+code-insiders.cmd custom.omp.json
+oh-my-posh enable reload
+oh-my-posh upgrade --force
+oh-my-posh enable reload
+oh-my-posh disable reload
+git commit -a -m "setup script optimization and prompt update"
+git push
+ls
+cd
+ls
+cd code/nu
+nu setup.nu
+cd code/nu
+hx setup.nu
+nu setup.nu
+hx setup.nu
+nu setup.nu
+hx setup.nu
+nu setup.nu
+hx setup.nu
+nu setup.nu
+hx setup.nu
+nu setup.nu
+hx setup.nu
+code-insiders.cmd setup.nu
+nu setup.nu
+cd code/nu
+nu setup.nu
+($r.src | path type) == dir and --recursive
+let r = {src: (pwd) dst: (pwd)/tmp}
+($r.src | path type) == dir and --recursive
+(if ($r.src | path type) == dir { [recursive]})
+...(if ($r.src | path type) == dir { [recursive] })
+...(if ($r.src | path type) == dir { [--recursive] })
+echo ...(if ($r.src | path type) == dir { [--recursive] })
+nu setup.nu
+echo ...(if ($r.src | path type) == dir { [--recursive] })
+nu setup.nu
+git commit -a -m "setup script optimization and prompt update"
+git push
+exit
+ls
+c
+cd
+winget install tailscale.tailscale
+exit
+cd
+cd code/nu
+git pull
+exit
+clear
+cd
+winget list
+winget update --all --help
+job spawn { winget update --all --uninstall-previous --disable-interactivity --accept-source-agreements --accept-package-agreements }
+job list
+job list | table -e
+job list
+job 
+job recv 1
+job recv 
+job 
+job llist
+job list 
+wsl
+cargo
+rustup
+rustup --help
+rustup uninstall
+winget list rustup
+winget uninstall rustup --purge
+cargo
+which cargo
+rustup
+which rustup
+rustup self uninstall
+sudo nu
+rustup self uninstall
+rm -rf .cargo\
+exit
+sudo pwsh
+wsl
+wsl -d Debian --exec /home/ramda/.cargo/bin/nu 
+exit
+cd 
+cd code\nu\
+git pull
+nu setup.nu
+~/.cargo/bin/nu setup.nu
+which nu
+$nu.default-config-dir
+$nu.default-config-dir | path exists
+touch ($nu.default-config-dir | path join env.nu)
+clear
+nu setup.nu
+~/.cargo/bin/nu setup.nu
+exec ~/.cargo/bin/nu.exe
+exit
+~/.cargo/bin/nu.exe
+exit
+hx --grammar fetch; hx --grammar build
+hx --grammar build
+cd
+cd code\nu\
+nu inventory.nu
+which nu
+config nu
+git pull
+~/.cargo/bin/nu setup.nu
+config nu
+exit
+nu
+exit
+cd
+cd code\nu\
+git pull
+nu setup.nu
+nu setup.nu carapace
+code setup.nu
+nu setup.nu carapace
+carapace
+nu setup.nu carapace
+which bash
+bash
+nu setup.nu carapace
+nu setup.nu
+nu setup.nu all
+nu setup.nu -a
+nu setup.nu servers
+bun -g
+bun -g lis
+bun -g list
+nu setup.nu servers
+nu setup.nu servers -i
+nu setup.nu -a
+winget search zellij
+nu setup.nu -a
+which zellij
+zellij
+exit
+which zellij
+nu setup.nu -a
+cd
+cd code\nu\
+nu setup.nu -a
+cd code\nu\
+nu setup.nu -a
+help std log
+help std/log
+use std/log
+help std/log
+help log
+nu setup.nu -a
+nu setup.nu carapace
+nu setup.nu zellij
+nu setup.nu carapace
+nu setup.nu -a
+iter
+setup info
+$nu.user-autoload-dirs
+$nu.user-autoload-dirs | get 0 | cd $in
+setup info
+nu setup.nu -a
+iter
+config def
+$nu.user-autoload-dirs | get 0 | cd $in
+$nu.user-autoload-dirs | get 0 | mkdir $in
+$nu.user-autoload-dirs | get 0 | rm $in
+nu setup.nu -a
+$nu.user-autoload-dirs | get 0 | cd $in
+ls
+clear
+config def 
+exit
+config def 
+cd
+cd code\nu\
+nu setup.nu -a
+config def 
+nu setup.nu -a
+config def 
+nu setup.nu helix
+config def 
+winget search helix
+winget update helix
+$nu.data-dir
+$nu.data-dir | path basename --replace helix
+$nu.data-dir | path basename --replace helix | cd
+$nu.data-dir | path basename --replace helix | cd $in
+ls
+code config.toml
+config def 
+exit
+nu setup.nu -a
+config def
+wsl
+exit
+cd ~\code\nu\
+git add alternate\
+git commit -a -m "setup script optimization and prompt update"
+git push
+wsl
+exit
+cd ~\code\nu\
+git pull
+nu setup.nu --config --modules --autolaod
+nu setup.nu --config --modules --autoload
+config def
+exit
+cd ~\code\nu\
+git pull
+ls
+autoload path
+autoload path -u | cd $in
+ls
+cd
+ls
+ssh
+ssh xps
+cd
+cd ~\code\nu\
+ls
+config nu
+cp ./config/linux/nushell/config.nu $nu.config-path
+config nu
+cp ./config/linux/nushell/autoload/extensions.nu (autoload path -u)
+reload
+enu
+cp ./config/linux/nushell/autoload/configuration.nu (autoload path -u)
+config alias
+cp ./config/linux/nushell/autoload/alias.nu (autoload path -u)
+config alias
+config def
+(autoload path -u def.nu)
+(autoload path -u def.nu) | rm $in
+config nu
+wsl which fortune
+wsl --exec /usr/games/fortune
+config nu
+wsl.exe --exec /usr/bin/hx
+ls
+mv config/linux .config
+mv .config/* config\
+rm .config
+mv config\windows\ .
+ls
+cd windows
+wsl.exe --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd))
+ssh xps
+cd
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+ssh xps
+icacls
+icacls .ssh
+icacls /? .ssh
+icacls .ssh /reset
+ssh xps
+icacls .ssh\config /reset
+ssh xps
+icacls .ssh\config 
+icacls .ssh\config /remove:g zr-zenbook\\tewwa
+icacls .ssh\config 
+icacls .ssh /remove:g zr-zenbook\\tewwa
+icacls .ssh
+icacls .ssh /remove:g zr-zenbook\tewwa
+icacls .ssh
+icacls .ssh /remove:g 'zr-zenbook\tewwa' /T
+icacls .ssh
+icacls .ssh /remove:g 'zr-zenbook\tewwa:(I)(OI)(CI)(F)' /T
+icacls .ssh /remove:g 'zr-zenbook\tewwa:(F)' /T
+icacls .ssh /grant:r 'zr-zenbook\tewwa:(N)' /T
+icacls .ssh /grant:r 'zr-zenbook\tewwa:N' /T
+icacls .ssh /grant:r 'zr-zenbook\tewwa' /T
+icacls .ssh /inheritance:r /remove:g 'zr-zenbook\tewwa' /T
+ls
+ls .ssh
+takeown .ssh
+takeown /? .ssh
+takeown /? 
+takeown /F .ssh
+takeown /S system /U ramda /F .ssh
+takeown /U ramda /F .ssh
+takeown /F .ssh
+sudo
+sudo takeown.exe /F .ssh
+icacls .ssh
+ls .ssh
+sudo icacls.exe  .ssh
+sudo icacls.exe .ssh
+sudo -u ramda 
+sudo nu
+icacls .ssh
+icacls /?
+icacls .ssh /grant 'ZR-ZENBOOK\ramda:(W)'
+icacls .ssh
+ls .ssh
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)'
+icacls .ssh
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)(WD)(X)'
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)WDX'
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)(WDAC)'
+icacls .ssh\
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)(WD,X)'
+ls .ssh
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)(RD,WO,X)'
+icacls .ssh
+ssh
+icacls .ssh /reset
+icacls .ssh
+icacls .ssh /inheritance:r /deny 'zr-zenbook\tewwa:(I)(OI)(CI)(F)' /T
+icacls .ssh /inheritance:r /remove 'zr-zenbook\tewwa:(I)(OI)(CI)(F)' /T
+icacls .ssh /inheritance:r /grant:r 'zr-zenbook\tewwa:(NP)(N)' /T
+icacls .ssh /inheritance:r /grant:r 'zr-zenbook\tewwa:(NP)' /T
+ls
+icacls .ssh
+icacls .ssh /reset
+icacls .ssh 
+icacls .ssh /?
+icacls /?
+icacls .ssh /deny 'zr-zenbook\tewwa'
+icacls .ssh /deny 'zr-zenbook\tewwa:(F)'
+icacls .ssh
+icacls .ssh /deny 'zr-zenbook\tewwa:(I)(OI)(CI)(F)'
+icacls .ssh /deny 
+icacls .ssh 
+icacls .ssh /reset
+icacls .ssh 
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(I)(OI)(CI)(F)'
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(I)(OI)(F)'
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(I)(F)'
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(F)'
+icacls
+icacls .ssh
+icacls .ssh /reset
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)'
+icacls .ssh
+icacls .ssh /inheritance:r /grant:r 'BUILTIN\Administrators:(F)' /T
+icacls
+icacls .ssh
+icacls .ssh /inheritance:r /grant:r 'BUILTIN\Administrators:(I)(OI)(CI)(F)' /T
+icacls .ssh /inheritance:r /grant:r 'BUILTIN\Administrators:(I)(OI)(CI)' /T
+icacls .ssh /inheritance:r /grant:r 'BUILTIN\Administrators:(F)(I)(OI)' /T
+icacls .ssh /inheritance:r /grant:r 'BUILTIN\Administrators:(I,OI,CI,F)' /T
+icacls .ssh
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(F)'
+icacls .ssh
+ls .ssh
+ssh xps
+icacls
+icacls .
+exit
+ssh xps.wsl
+ls
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+icacls .
+icacls .ssh
+icacls .ssh /grant 'NT AUTHORITY\SYSTEM:(F)' /T
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+icacls .ssh /grant 'S-1-15-3-65536-599108337-2355189375-1353122160-3480128286-3345335107-485756383-4087318168-230526575:(S,X)' /T
+icacls .ssh
+takeown /F .ssh
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+icacls
+icacls .ssh
+icacls .ssh /grant 'ZR-ZENBOOK\ramda:(I)(W)'
+icacls .ssh /inheritance:e /grant 'ZR-ZENBOOK\ramda:(OI)(CI)(F)'
+icacls .ssh
+icacls .ssh /reset
+icacls .ssh
+icacls /grant:r 'zr-zenbook\tewwa:(N)'
+icacls /grant:r 'zr-zenbook\tewwa:N'
+icacls /grant:r 'zr-zenbook\tewwa'
+icacls /inheritance:d
+icacls /inheritance:d .ssh
+icacls .ssh /inheritance:d
+icacls .ssh
+icacls .ssh /remove:g 'zr-zenbook\tewwa' /T
+icacls .ssh
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+icacls .
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u $nu.config-path)
+wsl --exec --user root /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+wsl
+nano
+code
+code .ssh/config
+icacls .ssh/config
+icacls .ssh
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(F)' /T
+icacls .ssh
+icacls .ssh /remove 'ZR-ZENBOOK\ramda:(F)'
+icacls .ssh /deny 'ZR-ZENBOOK\ramda:(F)'
+icacls .ssh
+icacls .ssh /remove 'ZR-ZENBOOK\ramda:(N)'
+icacls .ssh /remove:g 'ZR-ZENBOOK\ramda:(N)'
+icacls .ssh /remove:d 'ZR-ZENBOOK\ramda:(N)'
+icacls
+icacls .ssh
+icacls .ssh /grant:r 'ZR-ZENBOOK\ramda:(OI)(CI)(F)' /T
+ls
+icacls .ssh
+icacls .ssh /reset
+icacls .ssh
+icacls .ssh /inheritance:d /remove 'zr-zenbook\tewwa' /T
+icacls .ssh
+icacls .ssh /inheritance:d /remove:g 'zr-zenbook\tewwa' /T
+icacls .ssh
+icacls .ssh/config
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+ssh xps.wsl
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+ssh xps.wsl
+ssh xps.wsl.nu
+wsl --exec /usr/bin/hx (wsl.exe --exec wslpath -u (pwd | path join .ssh config))
+ssh xps.wsl.nu
+wsl
+hostname
+ssh pi
+ssh 100.97.81.25
+tailscale
+tailscale update
+sudo tailscale update
+tailscale
+tailscale ssh
+tailscale ssh ramda@pi
+tailscale ssh ramda@pi4
+tailscale ssh ramda@pi5
+cd
+tailscale ssh ramda@pi5
+tailscale ssh ramda@pi
+ssh-keygen -h
+ssh-keygen --help
+ssh-keygen -t rsa
+tailscale ssh ramda@pi
+tailscale ssh ramda@pi --help
+tailscale ssh ramda@xps
+ls
+cd
+open .ssh/id_rsa
+open .ssh/id_rsa.pub | copy
+ssh xps 
+tailscale ssh ramda@xps
+ssh pi
+open .ssh/id_rsa.pub | copy
+ssh pi
+tailscale ssh pi
+exit
+exit
+config nu
+code $nu.config-path
+config nu
+\\wsl$\Debian\usr\bin\hx
+^\\wsl$\Debian\usr\bin\hx
+\\wsl.localhost\Debian\usr\bin\hx
+^"\\wsl.localhost\Debian\usr\bin\hx"
+^'\\wsl.localhost\Debian\usr\bin\hx'
+wsl --exec hx
+$env.path
+cd ~/.local/bin
+ls
+cd ../share
+ls
+mkdir executables
+cd executables\
+mkdir wsl-helix
+cd wsl-helix\
+bun init
+bun -v
+which bun
+winget update Oven-Sh.Bun
+which bun
+bun -v
+bun init
+ls
+wsl --exec hx index.ts
+wsl --user ramda --exec hx index.ts
+wsl
+wsl -e nu
+wsl --exec /usr/bin/hx --help
+wsl
+wsl --exec /usr/bin/hx --config /usr/share/helix/config.toml
+wsl --exec /usr/bin/hx --config /usr/share/helix/config.toml index.ts
+wsl --exec /usr/bin/hx --config /usr/share/helix/config.toml --working-dir ~ index.ts
+wsl --exec /usr/bin/hx --config /usr/share/helix/config.toml --working-dir /home index.ts
+wsl --exec /usr/bin/hx --config /usr/share/helix/config.toml --working-dir /home/ramda/ index.ts
+wsl --exec /usr/bin/hx --config /usr/share/helix/config.toml 
+wsl --exec nu --execute hx --config /usr/share/helix/config.toml
+wsl --cd ~ --exec /usr/bin/hx --config /usr/share/helix/config.toml index.ts
+wsl --cd ~ --exec /usr/bin/hx --config /usr/share/helix/config.toml (pwd | path join index.ts)
+wsl --cd ~ --exec /usr/bin/hx (pwd | path join index.ts)
+wsl --cd ~ --exec /usr/bin/hx (wsl --exec wslpath -u (pwd | path join index.ts))
+wsl hx index.ts
+bun run index.ts
+cd ~/.local/share/executables/wsl-helix/
+bun run index.ts
+cd ~/.local/share/executables/wsl-helix/
+bun run index.ts
+cd ~/.local/share/executables/wsl-helix/
+cd
+rm -rf ~/.local/share/executables/
+config alias
+config def
+/config
+config nu
+$env.config.buffer_editor
+$env.config.buffer_editor = {|| wsl --exec hx }
+cd .local/bin
+ls
+wsl hx helix.bat
+mv helix.bat wsl.bat
+cmd wsl.bat
+cmd /c wsl.bat
+wsl hx helix.bat
+exit
+cd 
+cd .local/bin
+wsl hx helix.bat
+rm wsl.bat
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+helix $nu.config-path
+wsl hx helix.bat
+wslpath
+wsl hx helix.bat
+wsl hx wslpath.bat
+wslpath
+wslpath a
+wslpath (pwd)
+wsl hx wslpath.bat
+wslpath (pwd)
+wsl hx wslpath.bat
+wslpath (pwd)
+wsl hx wslpath.bat
+wslpath
+wslpath -h
+wslpath --help
+wslpath --u
+wslpath -u (pwd)
+wsl hx wslpath.bat
+wslpath -u (pwd)
+wsl hx wslpath.bat
+ls
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+wsl hx helix.bat
+helix
+$env.config.buffer_editor = helix
+$env.config.buffer_editor = 'helix'
+config nu
+wsl hx helix.bat
+config nu
+wsl hx helix.bat
+config nu
+wsl hx helix.bat
+config nu
+wsl hx helix.bat
+config nu
+wsl hx helix.bat
+config nu
+wsl --exec echo '$PATH'
+wsl --exec echo "$PATH"
+wsl echo "$PATH"
+wsl --exec which prettier
+wsl --exec which nu
+wsl --exec nu
+wsl --help
+bash hx
+wsl whoami
+wsl $env.path
+wsl 'echo $PATH'
+wsl 'prettier'
+wsl 'whoami'
+wsl
+sh
+wsl --exec sh
+hx
+which hx
+helix
+cd
+cd .local/bin
+wsl hx helix.bat
+helix
+helix helix.bat
+cd
+$env.config.buffer_editor
+$env.config.buffer_editor = helix
+$env.config.buffer_editor = 'helix'
+config nu
+helix helix.bat
+wsl hx helix.bat
+helix .local\bin\helix.bat
+wsl hx .local\bin\helix.bat
+wsl hx .local/bin/helix.bat
+helix .local\bin\helix.bat
+helix
+wsl hx .local/bin/helix.bat
+helix
+wsl hx .local/bin/helix.bat
+helix
+helix .local\bin\helix.bat
+wslhx
+edit
+editor
+$env.config.buffer_editor = 'helix'
+config nu
+helix .local\bin\helix.bat
+config nu
+helix .local\bin\helix.bat
+config nu
+helix .local\bin\helix.bat
+wsl hx .local/bin/helix.bat
+helix .local\bin\helix.bat
+wsl hx $nu.config-path
+wsl hx (wslpath -u $nu.config-path)
+wsl --exec sh hx (wslpath -u $nu.config-path)
+wsl --exec sh /usr/bin/hx (wslpath -u $nu.config-path)
+wsl --exec sh /usr/bin/hx $"(wslpath -u $nu.config-path)"
+wsl --exec sh /usr/bin/hx
+wsl --exec sh
+helix .local\bin\helix.bat
+wsl --exec echo "$PATH"
+wsl --exec echo '$PATH'
+wsl echo '$PATH'
+wsl bash -c echo '$PATH'
+wsl bash -c 'echo $PATH'
+wsl --exec echo `$PATH`
+wsl --exec echo `${PATH}`
+wsl ---help
+wsl --help
+wsl --shell-type standard
+wsl --shell-type none
+wsl --shell-type login
+wsl --shell-type standard --exec hx
+wsl 
+helix .local\bin\helix.bat
+config nu
+helix .local\bin\helix.bat
+config nu
+echo $env.WSLENV
+wsl 
+wsl bash -c $'WSLENV="$WSLENV:PATH/p" hx (wslpath -u $nu.config-path)'
+wsl bash -c 'which nu-lint'
+wsl 
+wsl echo '$PATH'
+wsl --shell-type standard echo '$PATH'
+wsl --shell-type login echo '$PATH'
+wsl hx .local/bin/helix.bat
+config nu
+wsl
+config nu
+wsl --shell-type login echo '$PATH'
+wsl --shell-type login echo 'path = $PATH'
+wsl --shell-type login echo 'path = $PATH\nshell = $SHELL\nuser = $USER'
+wsl --shell-type login echo 'path = $PATH\nshell = $SHELL\\nuser = $USER'
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER'
+wsl --shell-type login --exec echo 'path = $PATH | shell = $SHELL | user = $USER'
+wsl --shell-type login --exec bash -c echo 'path = $PATH | shell = $SHELL | user = $USER'
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER'
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER | prettier = (which prettier)'
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER | prettier = $(which prettier)'
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER | home = $HOME'
+exit
+wsl --shutdown
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER | home = $HOME'
+wsl --shell-type standard echo 'path = $PATH | shell = $SHELL | user = $USER | home = $HOME'
+wsl echo 'path = $PATH | shell = $SHELL | user = $USER | home = $HOME'
+wsl --exec nu --execute hx
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER | home = $HOME'
+wsl
+wsl --shell-type login echo 'path = $PATH | shell = $SHELL | user = $USER | home = $HOME'
+wsl
+wsl hx .local/bin/helix.bat
+config nu
+wsl hx (wslpath -u $nu.config-path)
+wsl --shell-type login hx .local/bin/helix.bat
+wsl --shell-type login hx (wslpath -u $nu.config-path)
+wsl hx .local/bin/helix.bat
+config nu
+helix
+config nu
+helix
+helix .local\bin\helix.bat
+config nu
+helix .local\bin\helix.bat
+config nu
+helix .local\bin\helix.bat
+wsl hx .local\bin\helix.bat
+wsl hx .local/bin/helix.bat
+helix .local\bin\helix.bat
+config nu
+ls
+cd .local/bin
+ls
+mkdir ~/code/nu/batchfiles cp *.bat ~/code/nu/batchfiles
+mkdir ~/code/nu/batchfiles; cp *.bat ~/code/nu/batchfiles
+cd ~/code/nu/batchfiles/
+ls
+git status
+git add --all
+git status
+git commit -a -m "hoisted config files, added batchfiles for windows/wsl wrappers"
+git push
+ls
+..
+ls
+hx
+helix
